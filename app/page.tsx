@@ -7,6 +7,10 @@ import { HeroImage }    from "@/components/HeroImage";
 import { MenuOverlay }  from "@/components/MenuOverlay";
 import BrandsPage from "./brandPage";
 import SmoothScroll from "./SmoothScroll";
+import { ServicesSection } from "./ServicesSection";
+import ResultsPage from "./ResultsPage";
+import CreativeShowcase from "./CreativeShowcase";
+import AboutPage from "./Abount";
 
 const MENU_LINKS = [
   { name: "Work",        sub: "Featured Projects" },
@@ -39,19 +43,14 @@ export default function DesignAgencyLanding() {
   return (
     <div className="bg-[#f5f3ef] min-h-screen font-zalando">
 <SmoothScroll/>
-      {/* z-200 — always on top */}
-      <Navbar
+       <Navbar
         open={open}
         onToggle={() => setOpen((v) => !v)}
       />
 
-      {/* z-10 — page content */}
       <HeroSection time={time} />
 
-      {/* z-195 — fixed, single render, visual switches with open */}
-      {/* <HeroImage open={open} /> */}
 
-      {/* z-190 — slides up over page, image punches through */}
       <MenuOverlay
         open={open}
         time={time}
@@ -60,6 +59,14 @@ export default function DesignAgencyLanding() {
       />
 
       <BrandsPage/>
+
+      <ServicesSection/>
+
+      <ResultsPage/>
+
+      <CreativeShowcase/>
+
+      <AboutPage/>
 
     </div>
   );

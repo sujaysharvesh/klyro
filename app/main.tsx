@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { gsap } from "gsap";
 
-export default function Hero() {
+export default function DesignAgencyLanding() {
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState("");
   const heroBlockRef = useRef(null);
