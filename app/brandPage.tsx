@@ -19,17 +19,17 @@ export default function BrandsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f5f3ef] text-[#111] overflow-hidden font-zalando">
+    <div className="min-h-screen text-[#111] overflow-hidden font-zalando">
 
       {/* ── HERO ── */}
-      <section className="flex flex-col gap-10 px-12 pt-16 pb-14 border-b border-black/10 md:px-6 md:pt-10 md:pb-10">
+      <section className="flex flex-col gap-1 px-12 pt-16 pb-14 border-b border-black/10 md:px-6 md:pt-10 md:pb-10">
 
         {/* eyebrow row */}
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-normal tracking-[0.22em] uppercase text-black/40 font-zalando">
+        <div className="flex items-center justify-between pl-6">
+          <span className="text-[15px] font-zalando text-black/70 font-zalando">
             Trusted by modern brands
           </span>
-          <span className="text-[11px] font-light tracking-[0.1em] text-black/25 font-zalando">
+          <span className="text-[11px] font-zalando tracking-[0.1em] text-black/70 font-zalando">
             001
           </span>
         </div>
@@ -41,11 +41,11 @@ export default function BrandsPage() {
             position: "relative",
             fontSize: "clamp(44px, 6.5vw, 96px)",
             fontWeight: 400,
-            lineHeight: 0.8,
+            lineHeight: 0.95,
             letterSpacing: "-0.09em",
             color: "#111",
             left: 20,
-            top: 22
+            top: 22,
           }}
         >
           We create digital<br />
@@ -56,7 +56,7 @@ export default function BrandsPage() {
         </h1>
 
         {/* stats */}
-        <div className="flex flex-wrap gap-16 pt-4 border-t border-black/[0.08] md:gap-8">
+        <div className="flex flex-wrap gap-10 pt-4 border-t border-black/[0.08] md:gap-8">
           {stats.map((s) => (
             <div key={s.label} className="flex flex-col gap-1">
               <span className="font-zalando text-[28px] font-normal text-[#111] tracking-[-0.02em]">
@@ -134,7 +134,7 @@ export default function BrandsPage() {
         <div className="flex flex-col justify-between gap-8 px-12 py-14
                         border-b lg:border-b-0 lg:border-r border-black/[0.08]
                         md:px-6 md:py-8">
-          <span className="font-zalando text-[11px] font-normal tracking-[0.22em] uppercase text-black/40">
+          {/* <span className="font-zalando text-[11px] font-normal tracking-[0.22em] uppercase text-black/40">
             About
           </span>
           <svg
@@ -144,7 +144,7 @@ export default function BrandsPage() {
             <circle cx="24" cy="24" r="23" stroke="#111" strokeWidth="1" />
             <line x1="24" y1="1" x2="24" y2="47" stroke="#111" strokeWidth="1" />
             <line x1="1" y1="24" x2="47" y2="24" stroke="#111" strokeWidth="1" />
-          </svg>
+          </svg> */}
         </div>
 
         {/* right */}

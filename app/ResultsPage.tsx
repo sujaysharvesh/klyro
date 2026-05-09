@@ -99,8 +99,11 @@ function LineChart({ c }: { c: (typeof CASES)[0] }) {
         borderWidth: 1,
         borderDash: [5, 5],
         pointRadius: 0,
+        borderDashOffset: 0, 
         tension: 0.4,
         fill: false,
+        animation: false,
+        
       },
     ],
   };
@@ -115,14 +118,18 @@ export default function ResultsPage() {
     <main className="min-h-screen text-[#1a1a1a] p-6 lg:p-12 overflow-hidden selection:bg-black selection:text-white">
       
       {/* Header Section */}
-      <div className="flex justify-between items-end mb-16 border-b border-black/5 pb-8">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.4em] text-black/40 mb-2 font-medium">Growth Analysis</p>
-          <h1 className="text-5xl font-black uppercase tracking-tighter italic leading-none">Our Results</h1>
-        </div>
-        <div className="text-right hidden lg:block">
-          <p className="text-[10px] font-mono text-black/30 leading-tight">SYST: 2.049<br/>STATUS: VERIFIED</p>
-        </div>
+      <div className="flex justify-between mb-10 pb-8 lg:-translate-x-1 items-center lg:translate-y-[40px]">
+      <div>
+  <h1 className="text-[15px] tracking-[0.12em] text-black/70 leading-tight">
+    Capabilities
+  </h1>
+</div>
+
+<div className="text-right hidden lg:block">
+  <p className="text-[15px] text-black/70 leading-[1.6]">
+    Since 2019
+  </p>
+</div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
@@ -163,9 +170,9 @@ export default function ResultsPage() {
               </AnimatePresence>
 
               {/* Hover Indicator Line */}
-              {active === i && (
+              {/* {active === i && (
                 <motion.div layoutId="indicator" className="absolute left-0 top-0 bottom-0 w-[2px] bg-black" />
-              )}
+              )} */}
             </motion.div>
           ))}
         </div>
@@ -224,11 +231,6 @@ export default function ResultsPage() {
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="mt-8 flex justify-between items-center text-[9px] uppercase tracking-[0.4em] text-black/20">
-            <span>Verified 2026 Engagement</span>
-            <span>Proprietary Data Model</span>
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Zalando_Sans_SemiExpanded } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "./SmoothScroll";
+import { NavColorProvider } from "@/context/NavColorProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${zalando.variable} h-full antialiased`}
     >
       {/* <SmoothScroll /> */}
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+      <NavColorProvider>
+      {children}
+      </NavColorProvider>
+      </body>
     </html>
   );
 }

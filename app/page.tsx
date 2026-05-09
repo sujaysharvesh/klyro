@@ -9,8 +9,7 @@ import BrandsPage from "./brandPage";
 import SmoothScroll from "./SmoothScroll";
 import { ServicesSection } from "./ServicesSection";
 import ResultsPage from "./ResultsPage";
-import CreativeShowcase from "./CreativeShowcase";
-import AboutPage from "./Abount";
+import Test from "./works";
 
 const MENU_LINKS = [
   { name: "Work",        sub: "Featured Projects" },
@@ -22,6 +21,7 @@ const MENU_LINKS = [
 export default function DesignAgencyLanding() {
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState("");
+  const [darkNav, setDarkNav] = useState(false);
 
   /* Clock */
   useEffect(() => {
@@ -64,9 +64,7 @@ export default function DesignAgencyLanding() {
 
       <ResultsPage/>
 
-      <CreativeShowcase/>
-
-      <AboutPage/>
+      <Test/>
 
     </div>
   );

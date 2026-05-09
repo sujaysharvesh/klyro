@@ -91,6 +91,18 @@ export function ServicesSection() {
   return (
     <section className="relative min-h-screen w-full flex items-center px-12 overflow-hidden">
       
+      <div className="absolute top-20 left-12 right-10 flex justify-between items-center z-20">
+        <div>
+          {/* <p className="text-[10px] font-mono text-black/30 leading-tight">Growth Analysis</p> */}
+          <h1 className="text-[15px] font-zalando text-black/70 leading-tight">Our Service</h1>
+        </div>
+        <div className="text-right hidden lg:block">
+        <p className="text-[15px] font-zalando text-black/70 leading-tight">
+  Built for modern brands
+</p>
+        </div>
+      </div>
+      
       {/* ── VIDEO PANEL ── */}
       <div className="relative w-1/2 h-[500px] flex items-center justify-center z-10 pointer-events-none">
         <div

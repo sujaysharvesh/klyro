@@ -1,0 +1,41 @@
+HEX #E4E4E4
+// useLayoutEffect(() => {
+  //   if (!wrapperRef.current || !sectionRef.current) return;
+
+  //   const ctx = gsap.context(() => {
+  //     const el = wrapperRef.current!;
+
+  //     // Use offsetWidth/Height — not getBoundingClientRect — so we get
+  //     // the natural layout size before any GSAP transform is applied.
+  //     const naturalW = el.offsetWidth;
+  //     const naturalH = el.offsetHeight;
+
+  //     // Scale needed to cover 100vw × 100vh from the natural size
+  //     const scaleX = window.innerWidth / naturalW;
+  //     const scaleY = window.innerHeight / naturalH;
+  //     const coverScale = Math.max(scaleX, scaleY) * 1.02; // +2% kills sub-pixel gaps
+
+  //     gsap.fromTo(
+  //       el,
+  //       {
+  //         scale: 0.38,
+  //         borderRadius: "60px",
+  //       },
+  //       {
+  //         scale: coverScale,
+  //         borderRadius: "0px",
+  //         ease: "none",
+  //         scrollTrigger: {
+  //           trigger: sectionRef.current,
+  //           start: "top top",   // starts pinning when section reaches viewport top
+  //           end: "+=200%",      // 2× viewport of scroll travel → cinematic pacing
+  //           scrub: 1.2,
+  //           pin: true,          // GSAP handles the sticky pinning
+  //           anticipatePin: 1,
+  //         },
+  //       }
+  //     );
+  //   });
+
+  //   return () => ctx.revert();
+  // }, []);

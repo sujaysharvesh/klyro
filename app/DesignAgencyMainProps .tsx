@@ -1,16 +1,21 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 
 interface DesignAgencyMainProps {
   time: string;
   heroBlockRef: React.RefObject<HTMLDivElement | null>;
 }
 
+
 export default function DesignAgencyMain({
   time,
   heroBlockRef,
 }: DesignAgencyMainProps) {
+
+  const [darkNav, setDarkNav] = useState(false);
+
   return (
     <div className="relative z-10 pt-20 font-zalando">
       <div className="grid grid-cols-1 md:grid-cols-3 px-12 py-10 gap-1 items-start">
