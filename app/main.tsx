@@ -134,7 +134,7 @@ export default function DesignAgencyLanding() {
         {/* HERO GRID: Text Left (2fr), Image Right (1fr) */}
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] px-9 py-20 gap-10 items-center">
           <div ref={heroBlockRef} className="will-change-transform">
-            <h1 className="text-[clamp(32px,5.2vw,70px)] font-semibold leading-[1.05] tracking-tighter text-[#111] max-w-[1000px] uppercase">
+            <h1 className="text-[clamp(32px,5.2vw,70px)] font-zalando leading-[1.05] tracking-tighter text-[#111] max-w-[1000px] uppercase">
               We help brands scale through strategy, content, and performance marketing.
             </h1>
             <p className="text-[14px] text-[#888] mt-6 max-w-[320px]">Design · Strategy · Performance</p>

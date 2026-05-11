@@ -13,9 +13,11 @@ export function HeroSection({ time }: HeroSectionProps) {
 
   useEffect(() => {
     const handleScroll = () => {
+
+      
       gsap.to(heroBlockRef.current, {
         y: -(window.scrollY * 0.1),
-        duration: 0.4,
+        duration: 0.2,
         ease: "power2.out",
       });
     };
@@ -48,13 +50,33 @@ export function HeroSection({ time }: HeroSectionProps) {
         </div>
       </div>
 
-      <div className="mx-9 w-[65%] h-[2px] bg-[#ddd]" />
+      <div className="overflow-hidden border-y border-black/[0.08] bg-[#eeebe4] py-2.5 my-0">
+        <div className="flex whitespace-nowrap animate-marquee">
+          {["Strategy", "Content Marketing", "Performance", "Brand Identity", "Digital Growth", "Tamil Nadu · India"].map((item, i) => (
+            <span
+              key={i}
+              className="text-[10px] tracking-[0.18em] uppercase text-[#888] px-10 border-r border-black/10 flex-shrink-0"
+            >
+              {item}
+            </span>
+          ))}
+          {/* duplicate for seamless loop */}
+          {["Strategy", "Content Marketing", "Performance", "Brand Identity", "Digital Growth", "Tamil Nadu · India"].map((item, i) => (
+            <span
+              key={`b-${i}`}
+              className="text-[10px] tracking-[0.18em] uppercase text-[#888] px-10 border-r border-black/10 flex-shrink-0"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
 
       {/* Hero headline — right col is empty, HeroImage is fixed and fills it */}
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] px-9 py-20 gap-10 items-center">
           <div
           //  ref={heroBlockRef}
-           style={{ transform: "translateY(-20px)" }}>
+           style={{ transform: "translateY(-90px)" }}>
             <h1 className="text-[clamp(32px,5.2vw,70px)] font-semibold leading-[1.05] tracking-tighter text-[#111] max-w-[1000px] uppercase">
               We help brands scale through strategy, content, and performance marketing.
             </h1>
@@ -62,7 +84,7 @@ export function HeroSection({ time }: HeroSectionProps) {
           </div>
 
           <div className="flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-[400px] aspect-[4/5] overflow-hidden rounded-sm  lg:-translate-x-20 lg:-translate-y-10">
+            <div className="relative w-full max-w-[400px] aspect-[4/5] overflow-hidden rounded-sm  lg:-translate-x-20 lg:-translate-y-20">
               <Image
                 src="/cat.png" 
                 alt="Preview" 

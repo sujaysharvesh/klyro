@@ -21,7 +21,7 @@ const slides: {
   { content: <Work1 />, alt: "Slide 1", logoColor: "#f5ede0" }, // default dark
   { content: <Work2 />, alt: "Slide 2", logoColor: "#f0ede8" }, // light on dark bg
   { content: <Work3 />, alt: "Slide 3", logoColor: "#3d4f2e" }, // red accent
-  { content: <Work4 />, alt: "Slide 4", logoColor: "#1E3A34" }, // teal
+  // { content: <Work4 />, alt: "Slide 4", logoColor: "#1E3A34" }, // teal
 ];
 
 const DEFAULT_COLOR = "#000000";
@@ -32,7 +32,7 @@ export default function Works() {
 
   useLayoutEffect(() => {
     // Set color for the first slide immediately
-    setLogoColor(slides[0].logoColor);
+    // setLogoColor(slides[0].logoColor);
 
     const ctx = gsap.context(() => {
       const panels = gsap.utils.toArray<HTMLElement>(".ss-panel");
@@ -40,7 +40,7 @@ export default function Works() {
       panels.forEach((panel, i) => {
         if (i === 0) return;
 
-        gsap.set(panel, { yPercent: 100 });
+        gsap.set(panel, { yPercent: 110 });
 
         ScrollTrigger.create({
           trigger: wrapperRef.current,
@@ -52,7 +52,7 @@ export default function Works() {
             gsap.set(panel, { yPercent: (1 - self.progress) * 100 });
 
             // Crossover at 50% progress — new slide is dominant
-            if (self.progress >= 0.9) {
+            if (self.progress >= 0.8) {
               setLogoColor(slides[i].logoColor);
             } else {
               setLogoColor(slides[i - 1].logoColor);

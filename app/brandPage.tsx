@@ -170,6 +170,20 @@ export default function BrandsPage() {
             </svg>
           </a> */}
         </div>
+        
+      </section>
+
+      {/* ── CLIENT QUOTE ── */}
+      <section className="py-20 px-6 md:px-12 border-t border-black/8">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="w-12 h-px bg-gradient-to-r from-transparent via-black/30 to-transparent mx-auto mb-8" />
+          <p className="text-[14px] tracking-[0.2em] uppercase text-black/40 mb-4">
+            What our clients say
+          </p>
+          <p className="text-[18px] md:text-[20px] leading-[1.6] text-black/60 italic max-w-2xl mx-auto">
+            "A partner who truly understands how to blend creativity with strategic thinking."
+          </p>
+        </div>
       </section>
 
       {/* marquee keyframes — Tailwind can't generate these */}
