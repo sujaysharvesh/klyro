@@ -1,19 +1,23 @@
 "use client";
 
+import { motion, useTransform, AnimatePresence } from "framer-motion";
+import { useRef, useState } from "react";
+
 
 export default function BrandsPage() {
 
-
+  const marqueeRef = useRef<HTMLDivElement>(null);
+  const [hoveredBrand, setHoveredBrand] = useState<number | null>(null);
 
   const brands = [
-    "/logos/nike.svg",
-    "/logos/apple.svg",
-    "/logos/spotify2.svg",
-    "/logos/adidas.svg",
-    "/logos/netflix.svg",
-    "/logos/airbnb.svg",
-    "/logos/notion.svg",
-    "/logos/puma.svg",
+    { name: "Nike", logo: "/logos/nike.svg", color: "#E7682D", description: "Global sportswear leader" },
+    { name: "Apple", logo: "/logos/apple.svg", color: "#000000", description: "Technology innovation" },
+    { name: "Spotify", logo: "/logos/spotify2.svg", color: "#1DB954", description: "Audio streaming pioneer" },
+    { name: "Adidas", logo: "/logos/adidas.svg", color: "#000000", description: "Sports performance brand" },
+    { name: "Netflix", logo: "/logos/netflix.svg", color: "#E50914", description: "Entertainment redefined" },
+    { name: "Airbnb", logo: "/logos/airbnb.svg", color: "#FF5A5F", description: "Hospitality ecosystem" },
+    { name: "Notion", logo: "/logos/notion.svg", color: "#000000", description: "Productivity platform" },
+    { name: "Puma", logo: "/logos/puma.svg", color: "#000000", description: "Sports lifestyle brand" },
   ];
 
   const stats = [
@@ -26,15 +30,15 @@ export default function BrandsPage() {
     <div className="min-h-screen text-[#111] overflow-hidden font-zalando">
 
       {/* ── HERO ── */}
-      <section className="flex flex-col gap-1 px-12 pt-16 pb-14 border-b border-black/10 md:px-6 md:pt-10 md:pb-10">
+      <section className="flex flex-col gap-1 px-10 pt-10 pb-8 md:px-7 md:pt-7 md:pb-7">
 
         {/* eyebrow row */}
-        <div className="flex items-center justify-between pl-6">
-          <span className="text-[15px] font-zalando text-black/70 font-zalando">
+        <div className="flex items-center justify-between pl-5">
+          <span className="text-[14px] font-zalando text-black/70">
             Trusted by modern brands
           </span>
-          <span className="text-[11px] font-zalando tracking-[0.1em] text-black/70 font-zalando">
-            001
+          <span className="text-[12px] font-zalando tracking-[0.1em] text-black/70">
+            Global Partners
           </span>
         </div>
 
@@ -43,13 +47,13 @@ export default function BrandsPage() {
           className="font-zalando"
           style={{
             position: "relative",
-            fontSize: "clamp(44px, 6.5vw, 96px)",
+            fontSize: "clamp(38px, 6vw, 86px)",
             fontWeight: 400,
             lineHeight: 0.95,
             letterSpacing: "-0.09em",
             color: "#111",
-            left: 20,
-            top: 22,
+            left: 19,
+            top: 19,
           }}
         >
           We create digital<br />
@@ -60,10 +64,10 @@ export default function BrandsPage() {
         </h1>
 
         {/* stats */}
-        <div className="flex flex-wrap gap-10 pt-4 border-t border-black/[0.08] md:gap-8">
+        <div className="flex flex-wrap gap-7 pt-3 md:gap-7">
           {stats.map((s) => (
-            <div key={s.label} className="flex flex-col gap-1">
-              <span className="font-zalando text-[28px] font-normal text-[#111] tracking-[-0.02em]">
+            <div key={s.label} className="flex flex-col gap-0">
+              <span className="font-zalando text-[26px] font-normal text-[#111] tracking-[-0.02em]">
                 {s.value}
               </span>
               <span className="font-zalando text-[11px] font-normal tracking-[0.12em] uppercase text-black/40">
@@ -75,122 +79,100 @@ export default function BrandsPage() {
       </section>
 
       {/* ── MARQUEE ── */}
-      <section className="relative flex items-center border-b border-black/10">
+<section className="relative py-16 overflow-hidden">
+  <div className="absolute inset-0 bg-gradient-to-r from-[#FAF9F6] via-transparent to-[#FAF9F6] z-10 pointer-events-none" />
 
-        {/* left label */}
-        <div className="hidden md:hidden flex-shrink-0 h-[110px] flex items-center justify-center px-6 border-r border-black/[0.08] writing-mode-vertical">
-          <span
-            className="font-zalando text-[10px] tracking-[0.2em] uppercase text-black/30"
-            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-          >
-            Partners
-          </span>
-        </div>
-        {/* left label — visible on lg+ */}
-        <div className="hidden lg:flex flex-shrink-0 h-[110px] items-center justify-center px-6 border-r border-black/[0.08]">
-          <span
-            className="font-zalando text-[10px] tracking-[0.2em] uppercase text-black/30"
-            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-          >
-            Partners
-          </span>
-        </div>
+  {/* Left label */}
+  <div className="absolute left-0 top-1/2 -translate-y-1/2 z-20 pr-7 pl-5 py-3">
+    <span className="text-[10px] tracking-[0.3em] uppercase text-black/30">
+      Partners
+    </span>
+  </div>
 
-        {/* track */}
-        <div className="flex-1 overflow-hidden">
-          <div
-            className="flex w-max"
-            style={{ animation: "marquee 28s linear infinite" }}
-          >
-            {[...brands, ...brands, ...brands].map((logo, i) => (
-              <div
-                key={i}
-                className="w-[200px] h-[110px] flex-shrink-0 flex items-center justify-center
-                           border-r border-black/[0.07] bg-[#f5f3ef]
-                           transition-colors duration-400 hover:bg-black/[0.03]"
+  {/* Marquee Track */}
+  <div ref={marqueeRef} className="overflow-hidden">
+    <motion.div
+      className="flex w-max"
+      animate={{ x: ["0%", "-50%"] }}
+      transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+    >
+      {[...brands, ...brands].map((brand, i) => (
+        <motion.div
+          key={i}
+          className="
+            w-[180px] h-[70px]
+            flex-shrink-0
+            flex flex-col items-center justify-center
+            relative
+            group
+            cursor-pointer
+          "
+          onMouseEnter={() => setHoveredBrand(i)}
+          onMouseLeave={() => setHoveredBrand(null)}
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.3 }}
+        >
+          {/* Logo */}
+          <img
+            src={brand.logo}
+            alt={brand.name}
+            className="
+              w-[72px] h-[48px]
+              object-contain
+              opacity-40
+              grayscale
+              transition-all duration-500
+              group-hover:opacity-100
+              group-hover:grayscale-0
+              group-hover:scale-110
+            "
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+
+          {/* Hover Description */}
+          <AnimatePresence>
+            {hoveredBrand === i && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.25 }}
+                className="absolute bottom-5 text-center"
               >
-                <img
-                  src={logo}
-                  alt="brand logo"
-                  className="w-[100px] h-9 object-contain opacity-45 grayscale
-                             transition-opacity duration-300 hover:opacity-70"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+                <p className="text-[8px] tracking-[0.2em] uppercase text-black/40">
+                  {brand.description}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      ))}
+    </motion.div>
+  </div>
 
-        {/* right label */}
-        <div className="hidden lg:flex flex-shrink-0 h-[110px] items-center justify-center px-6 border-l border-black/[0.08]">
-          <span
-            className="font-zalando text-[10px] tracking-[0.2em] uppercase text-black/30"
-            style={{ writingMode: "vertical-rl" }}
-          >
-            Since 2019
-          </span>
-        </div>
-      </section>
-
-      {/* ── ABOUT ── */}
-      <section className="grid grid-cols-1 lg:grid-cols-[1fr_2fr]">
-
-        {/* left */}
-        <div className="flex flex-col justify-between gap-8 px-12 py-14
-                        border-b lg:border-b-0 lg:border-r border-black/[0.08]
-                        md:px-6 md:py-8">
-          {/* <span className="font-zalando text-[11px] font-normal tracking-[0.22em] uppercase text-black/40">
-            About
-          </span>
-          <svg
-            width="48" height="48" viewBox="0 0 48 48" fill="none"
-            className="opacity-15"
-          >
-            <circle cx="24" cy="24" r="23" stroke="#111" strokeWidth="1" />
-            <line x1="24" y1="1" x2="24" y2="47" stroke="#111" strokeWidth="1" />
-            <line x1="1" y1="24" x2="47" y2="24" stroke="#111" strokeWidth="1" />
-          </svg> */}
-        </div>
-
-        {/* right */}
-        <div className="flex flex-col justify-between gap-1 px-12 py-14 pb-20
-                        md:px-6 md:py-8 md:pb-14">
-          <p
-            className="font-zalando max-w-[1100px] text-black/65 leading-[1] tracking-[-0.02em]"
-            style={{ fontSize: "clamp(22px, 2.5vw, 32px)", fontWeight: 400 }}
-          >
-            We partner with ambitious brands to craft strategy, identity,
-            content, and digital systems that create long-term growth.
-          </p>
-          {/* <a
-            className="font-zalando inline-flex items-center gap-2.5 w-fit
-                       text-[13px] font-medium tracking-[0.06em] uppercase text-[#111]
-                       no-underline border-b border-[#111] pb-1 cursor-pointer
-                       transition-opacity duration-200 hover:opacity-50"
-          >
-            Start a project
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5"
-                    strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </a> */}
-        </div>
-        
-      </section>
-
-      {/* ── CLIENT QUOTE ── */}
-      <section className="bg-[#0F0F0F] text-[#f5ede0] py-20 px-6 md:px-12 border-t border-white/10">
-  <div className="max-w-4xl mx-auto text-center">
-    <div className="w-12 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8" />
-    <p className="text-[14px] tracking-[0.2em] uppercase text-[#f5ede0]/40 mb-4">
-      What our clients say
-    </p>
-    <p className="text-[18px] md:text-[20px] leading-[1.6] text-[#f5ede0]/60 italic max-w-2xl mx-auto">
-      "A partner who truly understands how to blend creativity with strategic thinking."
-    </p>
+  {/* Right label */}
+  <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20  pl-7 pr-5 py-3">
+    <span className="text-[10px] tracking-[0.3em] uppercase text-black/30">
+      Since 2019
+    </span>
   </div>
 </section>
 
-      {/* marquee keyframes — Tailwind can't generate these */}
+      {/* ── CLIENT QUOTE ── */}
+      <section className="text-[#080808] px-10 py-10 border-t border-white/10">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="w-12 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-5" />
+          <p className="text-[12px] tracking-[0.2em] uppercase text-[#fffff] mb-3">
+            What our clients say
+          </p>
+          <p className="text-[17px] md:text-[19px] leading-[1.6] text-black italic max-w-2xl mx-auto">
+            "A partner who truly understands how to blend creativity with strategic thinking."
+          </p>
+        </div>
+      </section>
+
       <style>{`
         @keyframes marquee {
           0%   { transform: translateX(0); }

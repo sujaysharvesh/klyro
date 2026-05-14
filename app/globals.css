@@ -36,4 +36,23 @@ body {
   font-family: var(--font-class-display);
 }
 
+.fill-text > span {
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-color: rgba(0, 0, 0, 0.25); /* matches your text-black/60 */
+  background-image: linear-gradient(135deg, #000 50%, rgba(0,0,0,0.25) 60%);
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 0% 200%;
+  color: transparent;
+  display: inline;
+  will-change: background-size;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill-text > span {
+    background-size: 200% 200%;
+  }
+}
+
 

@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useLayoutEffect,
+  useCallback,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Line } from "react-chartjs-2";
 import {
@@ -12,9 +18,14 @@ import {
   Filler,
   Tooltip,
 } from "chart.js";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useNavColor } from "@/context/NavColorProvider";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
-import { useNavColor } from "@/context/NavColorProvider";
+gsap.registerPlugin(ScrollTrigger);
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
 const CASES = [
   {
@@ -34,7 +45,7 @@ const CASES = [
     accentColor: "#f5ede0",
     chartLineColor: "#f5ede0",
     chartGridColor: "rgba(245,237,224,0.15)",
-    logoColor: "#f5ede0"
+    logoColor: "#f5ede0",
   },
   {
     brand: "Nova Tech",
@@ -53,7 +64,7 @@ const CASES = [
     accentColor: "#f5ede0",
     chartLineColor: "#f5ede0",
     chartGridColor: "rgba(245,237,224,0.15)",
-    logoColor: "#f0ede8" 
+    logoColor: "#f0ede8",
   },
   {
     brand: "Studio Mamma",
@@ -72,12 +83,22 @@ const CASES = [
     accentColor: "#3d4f2e",
     chartLineColor: "#3d4f2e",
     chartGridColor: "rgba(61,79,46,0.12)",
-    logoColor: "#3d4f2e"
+    logoColor: "#3d4f2e",
   },
 ];
 
-function LineChart({ c, theme }: { c: (typeof CASES)[0], theme: { lineColor: string, gridColor: string, textColor: string } }) {
-  const data = {
+const DEFAULT_COLOR = "#000000";
+
+// ─── Chart ────────────────────────────────────────────────────────────────────
+
+const LineChart = React.memo(function LineChart({
+  c,
+  theme,
+}: {
+  c: (typeof CASES)[0];
+  theme: { lineColor: string; gridColor: string; textColor: string };
+}) {
+  const data = React.useMemo(() => ({
     labels: c.months,
     datasets: [
       {
@@ -87,11 +108,11 @@ function LineChart({ c, theme }: { c: (typeof CASES)[0], theme: { lineColor: str
         backgroundColor: (context: any) => {
           const { ctx, chartArea } = context.chart;
           if (!chartArea) return null;
-          const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-          gradient.addColorStop(0, `${theme.lineColor}00`);
-          gradient.addColorStop(0.4, `${theme.lineColor}08`);
-          gradient.addColorStop(1, `${theme.lineColor}18`);
-          return gradient;
+          const g = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+          g.addColorStop(0, `${theme.lineColor}00`);
+          g.addColorStop(0.4, `${theme.lineColor}08`);
+          g.addColorStop(1, `${theme.lineColor}18`);
+          return g;
         },
         borderWidth: 2.5,
         pointRadius: 0,
@@ -120,222 +141,267 @@ function LineChart({ c, theme }: { c: (typeof CASES)[0], theme: { lineColor: str
         order: 2,
       },
     ],
-  };
+  }), [c, theme.lineColor]);
 
-  const options = {
+  const options = React.useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
-    interaction: {
-      mode: "index" as const,
-      intersect: false,
-    },
+    animation: { duration: 0 },
+    interaction: { mode: "index" as const, intersect: false },
     plugins: {
       legend: { display: false },
       tooltip: {
         backgroundColor: theme.textColor === "#f5ede0" ? "#1a1a1a" : "#ffffff",
         titleColor: theme.textColor === "#f5ede0" ? "#f5ede0" : "#1a1a1a",
-        bodyColor: theme.textColor === "#f5ede0" ? "rgba(245,237,224,0.7)" : "rgba(0,0,0,0.7)",
+        bodyColor: theme.textColor === "#f5ede0"
+          ? "rgba(245,237,224,0.7)"
+          : "rgba(0,0,0,0.7)",
         borderColor: theme.lineColor,
         borderWidth: 1,
         padding: 10,
         cornerRadius: 8,
-        titleFont: { size: 11, weight: "bold" },
+        titleFont: { size: 11, weight: "bold" as const },
         bodyFont: { size: 10 },
         callbacks: {
-          label: (context: any) => {
-            const label = context.dataset.label || '';
-            const value = context.raw;
-            return `${label}: ${value}`;
-          }
-        }
+          label: (ctx: any) => `${ctx.dataset.label}: ${ctx.raw}`,
+        },
       },
     },
     scales: {
       x: {
         grid: { display: false },
-        ticks: { 
-          font: { size: 9, weight: "400" }, 
-          color: theme.gridColor, 
-          maxRotation: 0, 
+        ticks: {
+          font: { size: 9, weight: "400" as const },
+          color: theme.gridColor,
+          maxRotation: 0,
           autoSkip: true,
           padding: 8,
         },
       },
       y: {
-        grid: { 
-          color: theme.gridColor, 
-          drawBorder: false,
-          lineWidth: 0.5,
-        },
-        ticks: { 
-          display: false,
-        },
+        grid: { color: theme.gridColor, lineWidth: 0.5 },
+        ticks: { display: false },
         beginAtZero: true,
       },
     },
-    elements: {
-      line: {
-        capBezierPoints: true,
-      },
-    },
-  };
+  }), [theme]);
 
-  return <div className="h-[280px] w-full"><Line data={data} options={options} /></div>;
-}
+  return (
+    <div className="h-[260px] w-full">
+      <Line data={data} options={options} />
+    </div>
+  );
+});
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ResultsPage() {
   const { setLogoColor } = useNavColor();
-  const DEFAULT_COLOR = "#000000";
-  
+
   const [active, setActive] = useState(0);
-  const [hasScrolled, setHasScrolled] = useState(false);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Always-fresh ref read by GSAP closures — prevents stale captures.
+  const activeRef = useRef(0);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | undefined>(undefined);
+
+  // Keep ref in sync
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
+
+  // ── Set correct logo color on first mount, before any scroll ─────────────
+  // This is the key fix from Doc 3: call setLogoColor immediately in a
+  // useEffect so the nav never flickers to the default black on page load.
+  useEffect(() => {
+    // setLogoColor(CASES[0].logoColor);
+    return () => setLogoColor(DEFAULT_COLOR);
+  }, [setLogoColor]);
+
+  // ── RAF-throttled updater ─────────────────────────────────────────────────
+  const goTo = useCallback((idx: number) => {
+    if (rafRef.current !== undefined) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = undefined;
+      if (idx === activeRef.current) return;
+      activeRef.current = idx;
+      setActive(idx);
+      setLogoColor(CASES[idx].logoColor);
+    });
+  }, [setLogoColor]);
+
+  // ── ScrollTrigger — Doc 3's per-boundary logo logic ──────────────────────
+  //
+  // One trigger per transition boundary (between panel i-1 and panel i).
+  // Each trigger owns exactly one scroll zone and handles all four crossing
+  // directions discretely. This is far more reliable than a single onUpdate
+  // that tries to math out the current index from overall progress.
+  //
+  // The goTo() call inside each callback updates both the React `active` state
+  // (driving Doc 4's framer-motion animations) and the logo color atomically.
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+
+      // Per-transition triggers
+      CASES.forEach((_, i) => {
+        if (i === 0) return;
+
+        ScrollTrigger.create({
+          trigger: wrapperRef.current,
+          start: () => `top+=${(i - 1) * window.innerHeight} top`,
+          end:   () => `top+=${i       * window.innerHeight} top`,
+          scrub: 0.3,
+          onUpdate(self) {
+            // Switch active panel at 50% through the transition zone —
+            // matches when the brand name visually becomes dominant.
+            if (self.progress >= 0.5) {
+              if (activeRef.current !== i)     goTo(i);
+            } else {
+              if (activeRef.current !== i - 1) goTo(i - 1);
+            }
+          },
+          onLeave()     { goTo(i); },       // Settled past transition → incoming
+          onEnterBack() { goTo(i); },       // Re-entered from below → still incoming
+          onLeaveBack() { goTo(i - 1); },  // Exited upward → restore outgoing
+        });
+      });
+
+      // Entry guard — razor-thin trigger at the pin point (section top == viewport top)
+      // onEnter:     section just pinned → activate panel 0 logo
+      // onLeaveBack: scrolled back above the section → reset to default
+      ScrollTrigger.create({
+        trigger: wrapperRef.current,
+        start: "top top",
+        end:   "top top+=1",
+        onEnter()     { setLogoColor(CASES[0].logoColor); },
+        onLeaveBack() { setLogoColor(DEFAULT_COLOR); },
+      });
+
+      // Exit guard — section bottom watcher
+      // onLeave:     scrolled past last panel into next section → reset
+      // onEnterBack: scrolled back into section from below → restore last panel
+      ScrollTrigger.create({
+        trigger: wrapperRef.current,
+        start: "bottom bottom",
+        end:   "bottom top",
+        onLeave()     { setLogoColor(DEFAULT_COLOR); },
+        onEnterBack() { setLogoColor(CASES[CASES.length - 1].logoColor); },
+      });
+
+    }, wrapperRef);
+
+    return () => {
+      ctx.revert();
+      if (rafRef.current !== undefined) cancelAnimationFrame(rafRef.current);
+    };
+  }, [goTo, setLogoColor]);
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+
   const c = CASES[active];
   const theme = {
     lineColor: c.chartLineColor,
     gridColor: c.chartGridColor,
     textColor: c.textColor,
   };
-
-  // Update logo color only after user has scrolled
-  useEffect(() => {
-    if (hasScrolled) {
-      setLogoColor(c.logoColor);
-    }
-    
-    // Cleanup function to reset logo color when component unmounts
-    return () => {
-      setLogoColor(DEFAULT_COLOR);
-    };
-  }, [active, hasScrolled, setLogoColor, c.logoColor, DEFAULT_COLOR]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!sectionRef.current) return;
-      
-      setIsScrolling(true);
-      
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-      scrollTimeoutRef.current = setTimeout(() => {
-        setIsScrolling(false);
-      }, 100);
-
-      const sectionTop = sectionRef.current.getBoundingClientRect().top + window.scrollY;
-      const scrolled = window.scrollY - sectionTop;
-      const zoneHeight = window.innerHeight;
-      
-      let newIndex = Math.floor(scrolled / zoneHeight);
-      newIndex = Math.min(CASES.length - 1, Math.max(0, newIndex));
-      
-      // Set hasScrolled to true once user actually scrolls
-      if (scrolled > 10 && !hasScrolled) {
-        setHasScrolled(true);
-      }
-      
-      if (newIndex !== active) {
-        setActive(newIndex);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-    };
-  }, [active, hasScrolled]);
+  const isDark = c.textColor === "#f5ede0";
 
   return (
-    <>
-      <div
-        ref={sectionRef}
-        style={{ height: `${CASES.length * 100}vh` }}
-        className="relative"
-      >
-        <div className="sticky top-0 h-screen overflow-hidden">
-          <motion.main
-            animate={{
-              backgroundColor: c.bgColor,
-              color: c.textColor,
-            }}
-            transition={{
-              duration: 0.6,
-              ease: [0.4, 0, 0.2, 1],
-            }}
-            className="h-full px-6 lg:px-12 py-10 flex flex-col selection:bg-black selection:text-white"
-          >
+    <div
+      ref={wrapperRef}
+      style={{ height: `${CASES.length * 100}vh` }}
+      className="relative"
+    >
+      <div className="sticky top-0 h-screen overflow-hidden">
+        <motion.main
+          animate={{ backgroundColor: c.bgColor, color: c.textColor }}
+          transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+          className="h-full flex flex-col"
+        >
 
-            {/* Header */}
-            <div className="flex justify-between items-center mb-8 translate-y-20">
-              <h1 className="text-[15px] tracking-[0.12em] opacity-70">Capabilities</h1>
-              <p className="text-[15px] opacity-70 hidden lg:block">Since 2019</p>
-            </div>
+          {/* ── TOP BAR ── */}
+          <div className="flex justify-between items-center px-8 lg:px-12 pt-8 pb-0 mt-20">
+            <p className="text-[10px] uppercase tracking-[0.22em] font-medium opacity-45">
+              Capabilities
+            </p>
+            <p className="text-[10px] uppercase tracking-[0.18em] opacity-30 hidden lg:block">
+              Since 2019
+            </p>
+          </div>
 
-            {/* Scroll hint */}
-            <AnimatePresence>
-              {active === 0 && !hasScrolled && (
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.4 }}
-                  className="flex items-center gap-2 mb-4"
-                >
-                  <span className="text-[10px] uppercase tracking-[0.18em] opacity-40">
-                    Scroll to explore results
-                  </span>
-                  <motion.span
-                    animate={{ y: [0, 4, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
-                    className="opacity-30 text-xs"
+          {/* ── DIVIDER ── */}
+          {/* <motion.div
+            animate={{ backgroundColor: `${c.textColor}12` }}
+            transition={{ duration: 0.5 }}
+            className="mx-8 lg:mx-12 h-[1px] mt-5"
+          /> */}
+
+          {/* ── BODY ── */}
+          <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 flex-1 min-h-0 px-8 lg:px-12 pt-8 pb-10">
+
+            {/* LEFT: brand list */}
+            <div className="w-full lg:w-[420px] flex flex-col justify-center">
+
+              {/* Scroll hint */}
+              <AnimatePresence>
+                {active === 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex items-center gap-2 mb-5"
                   >
-                    ↓
-                  </motion.span>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    <span className="text-[9px] uppercase tracking-[0.2em] opacity-30">
+                      Scroll to explore
+                    </span>
+                    <motion.span
+                      animate={{ y: [0, 4, 0] }}
+                      transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
+                      className="opacity-25 text-xs"
+                    >
+                      ↓
+                    </motion.span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-            <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 flex-1 min-h-0">
-
-              {/* LEFT: Brand list */}
-              <div className="w-full lg:w-[420px] flex flex-col justify-center space-y-0">
+              {/* Brand rows */}
+              <div className="flex flex-col">
                 {CASES.map((item, i) => (
                   <div
                     key={item.brand}
-                    className="relative py-7 border-b transition-colors duration-500"
-                    style={{ borderBottomColor: `${c.textColor}10` }}
+                    className="relative py-6"
+                    style={{ borderBottom: `1px solid ${c.textColor}10` }}
                   >
-                    {/* Progress bar on active item */}
+                    {/* Animated active indicator bar */}
                     {active === i && (
                       <motion.div
                         layoutId="activeBar"
-                        className="absolute left-0 top-0 bottom-0 w-[2px]"
+                        className="absolute left-0 top-0 bottom-0 w-[1.5px]"
                         style={{ backgroundColor: c.accentColor }}
                         transition={{ type: "spring", stiffness: 400, damping: 40 }}
                       />
                     )}
 
-                    <div className="flex items-baseline gap-6 pl-4">
+                    <div className="flex items-baseline gap-5 pl-5">
                       <motion.span
-                        animate={{
-                          opacity: active === i ? 0.8 : 0.2,
-                          color: active === i ? c.accentColor : undefined,
-                        }}
-                        transition={{ duration: 0.3 }}
-                        className="text-[11px] font-mono"
+                        animate={{ opacity: active === i ? 0.6 : 0.15 }}
+                        transition={{ duration: 0.25 }}
+                        className="text-[10px] font-mono tracking-widest shrink-0"
                       >
                         0{i + 1}
                       </motion.span>
-                      <div>
+
+                      <div className="flex-1 min-w-0">
                         <motion.h2
                           animate={{
-                            opacity: active === i ? 1 : 0.15,
+                            opacity: active === i ? 1 : 0.12,
                             x: active === i ? 4 : 0,
-                            color: active === i ? c.accentColor : undefined,
                           }}
-                          transition={{ duration: 0.4, ease: "easeOut" }}
-                          className="text-4xl lg:text-5xl font-black uppercase tracking-tighter"
+                          transition={{ duration: 0.35, ease: "easeOut" }}
+                          className="text-[clamp(28px,3.8vw,48px)] font-black uppercase tracking-[-0.04em] leading-none"
+                          style={{ color: active === i ? c.accentColor : undefined }}
                         >
                           {item.brand}
                         </motion.h2>
@@ -343,17 +409,18 @@ export default function ResultsPage() {
                         <AnimatePresence mode="wait">
                           {active === i && (
                             <motion.div
-                              initial={{ height: 0, opacity: 0, y: -10 }}
-                              animate={{ height: "auto", opacity: 1, y: 0 }}
-                              exit={{ height: 0, opacity: 0, y: -10 }}
-                              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                              key={`desc-${i}`}
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
                               className="overflow-hidden"
                             >
-                              <div className="pt-4">
-                                <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1.5">
+                              <div className="pt-3 space-y-1">
+                                <p className="text-[9px] uppercase tracking-[0.22em] opacity-40">
                                   {item.service}
                                 </p>
-                                <p className="text-sm opacity-60 leading-relaxed font-light max-w-xs">
+                                <p className="text-[13px] opacity-55 leading-relaxed font-light max-w-[280px]">
                                   {item.desc}
                                 </p>
                               </div>
@@ -364,149 +431,177 @@ export default function ResultsPage() {
                     </div>
                   </div>
                 ))}
+              </div>
 
-                {/* Pagination dots */}
-                <div className="flex gap-2 pt-6 pl-4">
-                  {CASES.map((_, i) => (
-                    <motion.div
-                      key={i}
-                      animate={{
-                        width: active === i ? 24 : 8,
-                        backgroundColor: active === i ? c.accentColor : `${c.textColor}20`,
-                      }}
-                      transition={{ duration: 0.4, ease: "easeOut" }}
-                      className="h-[2px] rounded-full"
-                    />
+              {/* Pagination dots */}
+              <div className="flex gap-2 pt-5 pl-5">
+                {CASES.map((_, i) => (
+                  <motion.div
+                    key={i}
+                    animate={{
+                      width: active === i ? 20 : 6,
+                      backgroundColor:
+                        active === i ? c.accentColor : `${c.textColor}20`,
+                    }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="h-[1.5px] rounded-full"
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* RIGHT: chart card */}
+            <div className="flex-1 flex flex-col justify-center min-h-0">
+              <motion.div
+                animate={{
+                  borderColor: `${c.textColor}10`,
+                  backgroundColor: isDark
+                    ? `${c.bgColor}CC`
+                    : "rgba(255,255,255,0.88)",
+                }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="rounded-2xl p-7 lg:p-9 border relative overflow-hidden"
+                style={{
+                  backdropFilter: isDark ? "blur(12px)" : "none",
+                  boxShadow: isDark
+                    ? "0 0 0 1px rgba(255,255,255,0.04) inset, 0 40px 80px -20px rgba(0,0,0,0.4)"
+                    : "0 40px 80px -20px rgba(0,0,0,0.08)",
+                }}
+              >
+                {/* Card header */}
+                <div className="flex justify-between items-start mb-8">
+                  <div className="space-y-0.5">
+                    <motion.p
+                      key={`lbl-${active}`}
+                      initial={{ y: 6, opacity: 0 }}
+                      animate={{ y: 0, opacity: 0.4 }}
+                      transition={{ duration: 0.25, delay: 0.05 }}
+                      className="text-[9px] uppercase tracking-[0.22em]"
+                    >
+                      Performance Metrics
+                    </motion.p>
+                    <motion.h3
+                      key={`brand-${active}`}
+                      initial={{ y: 8, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ duration: 0.3, delay: 0.08 }}
+                      className="text-xl font-black uppercase tracking-[-0.03em]"
+                    >
+                      {c.brand}
+                    </motion.h3>
+                    <motion.p
+                      key={`ind-${active}`}
+                      initial={{ y: 4, opacity: 0 }}
+                      animate={{ y: 0, opacity: 0.4 }}
+                      transition={{ duration: 0.25, delay: 0.12 }}
+                      className="text-[11px]"
+                    >
+                      {c.industry} · {c.year}
+                    </motion.p>
+                  </div>
+
+                  <motion.div
+                    key={`stat-${active}`}
+                    initial={{ scale: 0.88, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 360,
+                      damping: 26,
+                      delay: 0.15,
+                    }}
+                    className="px-4 py-3 rounded-xl flex flex-col items-end shrink-0"
+                    style={{
+                      backgroundColor: c.accentColor,
+                      color: isDark ? "#0F0F0F" : "#f5ede0",
+                    }}
+                  >
+                    <span className="text-2xl font-black tracking-tight">{c.stat}</span>
+                    <span className="text-[8px] uppercase tracking-widest opacity-55 mt-0.5">
+                      {c.label}
+                    </span>
+                  </motion.div>
+                </div>
+
+                {/* Legend */}
+                <div className="flex justify-end gap-5 mb-3">
+                  {[
+                    { label: "After",  dash: false },
+                    { label: "Before", dash: true  },
+                  ].map(({ label, dash }) => (
+                    <div key={label} className="flex items-center gap-1.5">
+                      <svg width="28" height="8">
+                        <line
+                          x1="0" y1="4" x2="28" y2="4"
+                          stroke={dash ? `${theme.lineColor}35` : theme.lineColor}
+                          strokeWidth={dash ? 1.5 : 2}
+                          strokeDasharray={dash ? "4 3" : undefined}
+                        />
+                      </svg>
+                      <span className="text-[9px] uppercase tracking-wider opacity-40">
+                        {label}
+                      </span>
+                    </div>
                   ))}
                 </div>
-              </div>
 
-              {/* RIGHT: Chart panel */}
-              <div className="flex-1 flex flex-col justify-center min-h-0">
-                <motion.div
-                  animate={{
-                    backgroundColor: c.textColor === "#f5ede0" ? `${c.bgColor}CC` : "white",
-                    borderColor: `${c.textColor}10`,
-                  }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="rounded-3xl p-8 lg:p-10 border relative overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.06)]"
-                  style={{
-                    backgroundColor: c.textColor === "#f5ede0" ? `${c.bgColor}CC` : "rgba(255,255,255,0.9)",
-                    backdropFilter: c.textColor === "#f5ede0" ? "blur(10px)" : "none",
-                  }}
+                {/* Chart */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`chart-${active}`}
+                    initial={{ opacity: 0, y: 12, scale: 0.985 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -12, scale: 0.985 }}
+                    transition={{
+                      duration: 0.38,
+                      ease: [0.19, 1, 0.22, 1],
+                      delay: 0.08,
+                    }}
+                  >
+                    <LineChart c={c} theme={theme} />
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Quarterly pips */}
+                <div
+                  className="grid grid-cols-4 gap-3 mt-6 pt-5 border-t"
+                  style={{ borderTopColor: `${c.textColor}12` }}
                 >
-
-                  {/* Top stat bar */}
-                  <AnimatePresence mode="wait">
-                    <div className="flex justify-between items-start mb-10">
-                      <div className="space-y-1">
-                        <motion.p
-                          key={`label-${active}`}
-                          initial={{ y: 8, opacity: 0 }}
-                          animate={{ y: 0, opacity: 0.5 }}
-                          transition={{ duration: 0.4, delay: 0.05 }}
-                          className="text-[10px] uppercase tracking-[0.2em]"
-                        >
-                          Performance Metrics
-                        </motion.p>
-                        <motion.h3
-                          key={`brand-${active}`}
-                          initial={{ y: 10, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ duration: 0.4, delay: 0.1 }}
-                          className="text-2xl font-bold tracking-tight"
-                          style={{ color: c.textColor === "#f5ede0" ? "#f5ede0" : "#1a1a1a" }}
-                        >
-                          {c.brand}
-                        </motion.h3>
-                        <motion.p
-                          key={`industry-${active}`}
-                          initial={{ y: 6, opacity: 0 }}
-                          animate={{ y: 0, opacity: 0.5 }}
-                          transition={{ duration: 0.4, delay: 0.15 }}
-                          className="text-[11px]"
-                        >
-                          {c.industry} · {c.year}
-                        </motion.p>
-                      </div>
-
-                      <motion.div
-                        key={`stat-${active}`}
-                        initial={{ scale: 0.85, opacity: 0, rotate: -5 }}
-                        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                        transition={{ type: "spring", stiffness: 350, damping: 28, delay: 0.2 }}
-                        className="px-5 py-4 rounded-2xl flex flex-col items-end"
-                        style={{ backgroundColor: c.accentColor, color: c.textColor === "#f5ede0" ? "#0F0F0F" : "#f5ede0" }}
-                      >
-                        <span className="text-3xl font-black tracking-tighter">{c.stat}</span>
-                        <span className="text-[9px] uppercase tracking-widest opacity-60 mt-0.5">{c.label}</span>
-                      </motion.div>
-                    </div>
-                  </AnimatePresence>
-
-                  {/* Chart Legend */}
-                  <div className="flex justify-end gap-6 mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-[2px]" style={{ backgroundColor: theme.lineColor }}></div>
-                      <span className="text-[10px] uppercase tracking-wider opacity-50">After</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-[2px]" style={{ backgroundColor: `${theme.lineColor}30` }}></div>
-                      <span className="text-[10px] uppercase tracking-wider opacity-40">Before</span>
-                    </div>
-                  </div>
-
-                  {/* Chart */}
-                  <AnimatePresence mode="wait">
+                  {c.growth.map((g, i) => (
                     <motion.div
-                      key={`chart-${active}`}
-                      initial={{ opacity: 0, y: 15, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -15, scale: 0.98 }}
-                      transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1], delay: 0.1 }}
+                      key={`${active}-${i}`}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.18 + i * 0.07, duration: 0.28 }}
+                      className="space-y-1"
                     >
-                      <LineChart c={c} theme={theme} />
-                    </motion.div>
-                  </AnimatePresence>
-
-                  {/* Quarterly pips */}
-                  <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t" style={{ borderTopColor: `${c.textColor}15` }}>
-                    {c.growth.map((g, i) => (
-                      <motion.div
-                        key={`${active}-${i}`}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 + i * 0.07, duration: 0.4 }}
-                        className="space-y-1"
+                      <p className="text-[8px] uppercase tracking-tight opacity-35">Q{i + 1}</p>
+                      <p className="text-[13px] font-bold">+{g}%</p>
+                      <div
+                        className="h-[2px] w-full rounded-full overflow-hidden"
+                        style={{ backgroundColor: `${c.textColor}10` }}
                       >
-                        <p className="text-[9px] uppercase tracking-tighter opacity-40">Q{i + 1}</p>
-                        <motion.p
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.25 + i * 0.07 }}
-                          className="text-sm font-bold"
-                        >
-                          +{g}%
-                        </motion.p>
-                        <div className="h-[3px] w-full rounded-full overflow-hidden" style={{ backgroundColor: `${c.textColor}10` }}>
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${g}%` }}
-                            transition={{ delay: 0.35 + i * 0.08, duration: 0.8, ease: "easeOut" }}
-                            className="h-full"
-                            style={{ backgroundColor: c.accentColor }}
-                          />
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-              </div>
-
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${g}%` }}
+                          transition={{
+                            delay: 0.3 + i * 0.08,
+                            duration: 0.9,
+                            ease: "easeOut",
+                          }}
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: c.accentColor }}
+                        />
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
             </div>
-          </motion.main>
-        </div>
+
+          </div>
+        </motion.main>
       </div>
-    </>
+    </div>
   );
 }

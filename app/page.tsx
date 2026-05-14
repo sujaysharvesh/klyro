@@ -10,6 +10,8 @@ import SmoothScroll from "./SmoothScroll";
 import { ServicesSection } from "./ServicesSection";
 import ResultsPage from "./ResultsPage";
 import Test from "./works";
+import AgencyAboutPage from "./Abount";
+import Footer from "./footer";
 
 const MENU_LINKS = [
   { name: "Work",        sub: "Featured Projects" },
@@ -61,10 +63,11 @@ export default function DesignAgencyLanding() {
       <BrandsPage/>
 
       <ServicesSection/>
-
       <ResultsPage/>
 
-      <Test/>
+
+      <AgencyAboutPage/>
+      <Footer/>
 
     </div>
   );

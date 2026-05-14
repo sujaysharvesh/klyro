@@ -332,7 +332,7 @@ export function ServicesSection({ animationStyle = "blur" }: ServicesSectionProp
   };
 
   return (
-    <section className="relative min-h-screen w-full flex items-center px-12 overflow-hidden bg-[#faf9f6]">
+    <section className="relative min-h-screen w-full flex items-center px-12 overflow-hidden">
 
       <div className="absolute top-30 left-12 right-10 flex justify-between items-center z-20 ">
         <h1 className="text-[15px] font-zalando text-black/70 leading-tight">Our Services</h1>
