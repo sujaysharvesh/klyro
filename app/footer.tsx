@@ -17,52 +17,48 @@ export default function Footer() {
   const { setLogoColor } = useNavColor();
   const footerRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const wrapperRef = useRef<HTMLElement>(null);
 
   useLayoutEffect(() => {
-    const footer = wrapperRef.current;
+    const footer = footerRef.current;
+    const content = contentRef.current;
     
-    if (!footer) return;
+    if (!footer || !content) return;
 
     const ctx = gsap.context(() => {
-      // Create a single ScrollTrigger for logo color change
+      // Initial state - footer content hidden
+      gsap.set(content, { yPercent: 100 });
+      
+      // ScrollTrigger for footer reveal
       ScrollTrigger.create({
         trigger: footer,
-        start: "top 10%",
-  end: "bottom 70%",
-        onEnter: () => {
-          console.log("Footer entered - changing logo color");
-          setLogoColor("#f5ede0");
-        },
-        onLeave: () => {
-          console.log("Footer left - resetting logo color");
-          setLogoColor(DEFAULT_COLOR);
-        },
-        onEnterBack: () => {
-          console.log("Footer entered from bottom - changing logo color");
-          setLogoColor("#f5ede0");
+        start: "top 30%",
+        end: "bottom 70%",
+        scrub: 1,
+        onUpdate: (self) => {
+          // Reveal content as user scrolls
+          gsap.to(content, {
+            yPercent: 100 - (self.progress * 100),
+            duration: 0.1,
+            ease: "power2.out"
+          });
+          
+          // Change logo color when footer becomes visible
+          if (self.progress > 0.3) {
+            setLogoColor("#f5ede0");
+          } else {
+            setLogoColor(DEFAULT_COLOR);
+          }
         },
         onLeaveBack: () => {
-          console.log("Footer left from top - resetting logo color");
           setLogoColor(DEFAULT_COLOR);
-        },
-        // Toggle actions to ensure it triggers properly
-        toggleActions: "play none play reverse",
+          gsap.to(content, {
+            yPercent: 100,
+            duration: 0.5,
+            ease: "power2.in"
+          });
+        }
       });
-
-      // Optional: Add a second trigger for when footer is fully visible
-    //   ScrollTrigger.create({
-    //     trigger: footer,
-    //     start: "top 30%",
-    //     end: "bottom 70%",
-    //     onToggle: (self) => {
-    //       if (self.isActive) {
-    //         console.log("Footer active area - logo color changed");
-    //         setLogoColor("#f5ede0");
-    //       }
-    //     },
-    //   });
-    }, footer);
+    }, footerRef);
 
     return () => {
       ctx.revert();
@@ -121,32 +117,20 @@ export default function Footer() {
   ];
 
   return (
-    <footer
-    ref={wrapperRef}
-     className="w-full min-w-full h-screen bg-[#000000] text-[#FFFFFF] font-zalando px-6 lg:px-12 flex flex-col justify-end overflow-hidden relative select-none">
+    <footer 
+      ref={footerRef}
+      className="w-full min-w-full h-screen bg-[#0a0a0a] text-[#FFFFFF] font-zalando px-6 lg:px-12 flex flex-col justify-end overflow-hidden relative select-none"
+    >
       
-      {/* Animated gradient orb following mouse */}
-      <div 
-        className="absolute w-96 h-96 rounded-full bg-white/5 blur-3xl pointer-events-none transition-all duration-500"
-        style={{ 
-          left: mousePosition.x - 192, 
-          top: mousePosition.y - 192,
-          opacity: 0.3
-        }}
-      />
-      
-      {/* Elegant gradient line at top */}
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-      
-      {/* Scrolling marquee line */}
-      <div className="absolute top-20 left-0 right-0 overflow-hidden whitespace-nowrap opacity-5 pointer-events-none">
+      {/* Scrolling marquee text - FIXED POSITION */}
+      <div className="absolute top-150 left-0 right-0 overflow-hidden whitespace-nowrap opacity-5 pointer-events-none">
         <div className="animate-marquee text-[8rem] font-bold tracking-wider">
-          SIRNIK • STUDIO • EST. 2020 • CREATIVE • DIGITAL • INNOVATION • 
+          KLYRO • STUDIO • EST. 2020 • CREATIVE • DIGITAL • INNOVATION • 
         </div>
       </div>
       
-      {/* Content Columns Layer */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-8 items-start mb-100 z-10">
+      {/* Content Columns Layer - GSAP animated */}
+      <div ref={contentRef} className="w-full grid grid-cols-1 md:grid-cols-12 gap-8 items-start mb-100 z-10 will-change-transform">
         
         {/* Column 1: Contact & Socials */}
         <div className="md:col-span-3 space-y-4">
@@ -177,13 +161,6 @@ export default function Footer() {
             ))}
           </ul>
           
-          {/* Added: Brief response time note */}
-          <div className="mt-6 pt-4 border-t border-white/5">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-pulse" />
-              <span className="text-[9px] text-white/30 tracking-wide">Response within 24h</span>
-            </div>
-          </div>
         </div>
 
         {/* Column 2: Navigation Map */}
@@ -221,14 +198,14 @@ export default function Footer() {
             </ul>
           </div>
           
-          {/* Added: Quick stats */}
+          {/* Quick stats */}
           <div className="mt-8 grid grid-cols-2 gap-3">
-            <div>
-              <div className="text-lg font-light text-white/60">50+</div>
+            <div className="group cursor-default">
+              <div className="text-lg font-light text-white/60 group-hover:text-white/80 transition-colors">50+</div>
               <div className="text-[9px] text-white/30 tracking-wide">Projects delivered</div>
             </div>
-            <div>
-              <div className="text-lg font-light text-white/60">12</div>
+            <div className="group cursor-default">
+              <div className="text-lg font-light text-white/60 group-hover:text-white/80 transition-colors">12</div>
               <div className="text-[9px] text-white/30 tracking-wide">Global awards</div>
             </div>
           </div>
@@ -242,48 +219,37 @@ export default function Footer() {
           <span className="text-[10px] tracking-wider text-white/40 block">Studio Note</span>
           <p className="text-sm font-light text-white/80 leading-relaxed max-w-sm hover:text-white/90 transition-colors duration-500">
             This space brings together work we've done and work we're currently doing, along with conversations that continue beyond individual projects. If it feels right, this can be the starting point
-            <span className="block mt-3 text-white/20 text-[10px] tracking-wide">— SIRNIK Studio</span>
+            <span className="block mt-3 text-white/20 text-[10px] tracking-wide">— KYLRO Studio</span>
           </p>
           
-          {/* Added: Current status */}
+          {/* Current status */}
           <div className="mt-4 pt-3 flex items-center gap-3 text-[9px] text-white/30">
-            <span>Currently accepting commissions</span>
+            <span className="hover:text-white/50 transition-colors cursor-default">Currently accepting commissions</span>
             <span className="w-1 h-1 rounded-full bg-white/20" />
-            <span>Open for collabs</span>
+            <span className="hover:text-white/50 transition-colors cursor-default">Open for collabs</span>
           </div>
         </div>
 
       </div>
-
+      
       {/* Massive Brand Element & Metadata Layer */}
       <div className="max-w-7xl w-full mx-auto flex flex-col md:flex-row md:items-end justify-between border-t border-white/10 pt-4 pb-6 z-10 gap-6">
         
-        {/* Massive Typography combined with Framed Image - Enhanced */}
+        {/* Brand elements */}
         <div className="flex items-end gap-4 md:gap-6 w-full md:w-auto">
-          <div className="w-1 h-1 bg-white/40 rounded-full animate-pulse" />
-          <div className="text-[8px] tracking-[0.2em] text-white/20 uppercase">
-            Est. 2020
-          </div>
-          {/* Added: Scroll indicator */}
+          {/* Scroll indicator */}
           <div className="hidden lg:flex items-center gap-2 ml-4">
-            <div className="w-8 h-[1px] bg-white/20" />
-            <span className="text-[8px] tracking-wider text-white/20">∞</span>
           </div>
-        </div>
-
-        {/* Added: Current time display */}
-        <div className="text-[10px] tracking-wider text-white/30 font-mono">
-          {currentTime} • LOCAL TIME
         </div>
 
         {/* Legal & Meta Info Block */}
         <div className="flex flex-col space-y-6 text-right self-end md:self-auto flex-shrink-0">
-          {/* Added: Awards section */}
+          {/* Awards section */}
           <div className="hidden md:flex gap-4 justify-end mb-2">
             {awards.map((award) => (
-              <div key={award.name} className="text-right">
-                <div className="text-[9px] font-mono text-white/30">{award.year}</div>
-                <div className="text-[8px] tracking-wide text-white/20">{award.name}</div>
+              <div key={award.name} className="text-right group cursor-default">
+                <div className="text-[9px] font-mono text-white/30 group-hover:text-white/50 transition-colors">{award.year}</div>
+                <div className="text-[8px] tracking-wide text-white/20 group-hover:text-white/30 transition-colors">{award.name}</div>
               </div>
             ))}
           </div>
@@ -322,12 +288,12 @@ export default function Footer() {
         <div className="absolute top-0 left-0 w-2 h-2 bg-white/30" />
       </div>
 
-      {/* Added: Bottom navigation dots */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 pointer-events-none">
-        <div className="w-1 h-1 rounded-full bg-white/40" />
-        <div className="w-1 h-1 rounded-full bg-white/20" />
-        <div className="w-1 h-1 rounded-full bg-white/20" />
-      </div>
+      {/* Scroll progress indicator */}
+      <div className="fixed bottom-0 left-0 bg-right-0 h-[10px] bg-gradient-to-r from-white/40 to-white/5 origin-left scale-x-0 z-50 pointer-events-none" 
+        style={{ 
+          transform: `scaleX(${typeof window !== 'undefined' ? (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) : 0})` 
+        }} 
+      />
 
       <style jsx>{`
         @keyframes marquee {
@@ -335,7 +301,16 @@ export default function Footer() {
           100% { transform: translateX(-50%); }
         }
         .animate-marquee {
-          animation: marquee 20s linear infinite;
+          animation: marquee 10s linear infinite;
+        }
+        
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 0.5; }
+        }
+        
+        .animate-pulse-slow {
+          animation: pulse-slow 3s ease-in-out infinite;
         }
       `}</style>
     </footer>

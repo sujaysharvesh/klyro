@@ -58,13 +58,12 @@ export default function BrandsPage() {
         >
           We create digital<br />
           experiences that<br />
-          <em className="not-italic font-zalando" style={{ fontStyle: "italic", color: "#555" }}>
+      
             move brands forward.
-          </em>
         </h1>
 
         {/* stats */}
-        <div className="flex flex-wrap gap-7 pt-3 md:gap-7">
+        <div className="flex flex-wrap gap-7 pt-4 md:gap-7 lg:translate-x-5">
           {stats.map((s) => (
             <div key={s.label} className="flex flex-col gap-0">
               <span className="font-zalando text-[26px] font-normal text-[#111] tracking-[-0.02em]">
@@ -79,8 +78,8 @@ export default function BrandsPage() {
       </section>
 
       {/* ── MARQUEE ── */}
-<section className="relative py-16 overflow-hidden">
-  <div className="absolute inset-0 bg-gradient-to-r from-[#FAF9F6] via-transparent to-[#FAF9F6] z-10 pointer-events-none" />
+<section className="relative py-10 overflow-hidden">
+  <div className="absolute inset-0 bg-gradient-to-r from-[#f5f3ef] via-transparent to-[#f5f3ef] z-10 pointer-events-none" />
 
   {/* Left label */}
   <div className="absolute left-0 top-1/2 -translate-y-1/2 z-20 pr-7 pl-5 py-3">
@@ -100,7 +99,7 @@ export default function BrandsPage() {
         <motion.div
           key={i}
           className="
-            w-[180px] h-[70px]
+            w-[180px] h-[100px]
             flex-shrink-0
             flex flex-col items-center justify-center
             relative
@@ -139,7 +138,7 @@ export default function BrandsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.25 }}
-                className="absolute bottom-5 text-center"
+                className="absolute bottom-1 text-center"
               >
                 <p className="text-[8px] tracking-[0.2em] uppercase text-black/40">
                   {brand.description}

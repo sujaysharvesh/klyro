@@ -17,83 +17,100 @@ interface MenuOverlayProps {
 
 export function MenuOverlay({ open, time, onClose, links }: MenuOverlayProps) {
   const linksRef = useRef<HTMLLIElement[]>([]);
+  const footerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
       gsap.fromTo(
         linksRef.current,
-        { y: 100, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power4.out", delay: 0.2 }
+        { y: 80, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.75, stagger: 0.07, ease: "power4.out", delay: 0.15 }
       );
+      gsap.fromTo(
+        footerRef.current,
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", delay: 0.65 }
+      );
+    } else {
+      gsap.set(linksRef.current, { y: 80, opacity: 0 });
+      gsap.set(footerRef.current, { opacity: 0 });
     }
   }, [open]);
 
   return (
     <div
-      className={`fixed inset-0 z-[190] bg-[#0c0b09] transition-all duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] ${
+      className={`fixed inset-0 z-[190] transition-all duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] ${
         open ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
-      style={{ clipPath: open ? "inset(0% 0% 0% 0%)" : "inset(0% 0% 100% 0%)" }}
+      style={{
+        background: "#111111",
+        clipPath: open ? "inset(0% 0% 0% 0%)" : "inset(0% 0% 100% 0%)",
+      }}
     >
-      <div className="relative h-full flex flex-col px-6 lg:px-12 pt-[140px] pb-10">
+      <div className="relative h-full flex flex-col px-8 lg:px-14 pt-36 pb-10">
 
-        {/* Links */}
-        <div className="flex-1 flex flex-col lg:flex-row justify-between items-start gap-12">
-          <ul className="flex flex-col w-full lg:w-1/2">
-            {links.map((link, i) => (
-              <li
-                key={link.name}
-                ref={(el) => (linksRef.current[i] = el!)}
-                className="border-b border-white/5 overflow-hidden"
+        {/* Nav links — large stacked type, bottom-anchored */}
+        <ul className="flex-1 flex flex-col justify-end gap-0">
+          {links.map((link, i) => (
+            <li
+              key={link.name}
+              ref={(el) => { if (el) linksRef.current[i] = el; }}
+              className="overflow-hidden"
+            >
+              <button
+                onClick={onClose}
+                className="group flex items-baseline gap-3 w-full text-left py-1 transition-opacity duration-200 hover:opacity-55 active:opacity-35"
               >
-                <button
-                  onClick={onClose}
-                  className="w-full py-7 px-8 group flex flex-col items-start transition-all duration-500 ease-out hover:bg-[#f0ede8]"
+                <span
+                  className="font-zalando font-bold uppercase leading-none text-[#f5ede0] tracking-[-0.02em]"
+                  style={{ fontSize: "clamp(36px, 8vw, 72px)" }}
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-5 h-[1px] bg-[#333] transition-all duration-500 group-hover:w-12 group-hover:bg-black" />
-                    <span className="text-[9px] font-medium tracking-[0.2em] text-[#444] transition-colors duration-300 group-hover:text-black font-zalando">
-                      0{i + 1}
-                    </span>
-                  </div>
-
+                  {link.name}
+                </span>
+                {/* {link.sub && (
                   <span
-                    className="font-zalando font-semibold text-[#888] uppercase leading-none transition-colors duration-300 group-hover:text-black"
-                    style={{ fontSize: "clamp(24px, 4vw, 48px)", letterSpacing: "-0.01em" }}
+                    className="text-[#f5ede0] opacity-45 transition-opacity duration-200 group-hover:opacity-70"
+                    style={{ fontSize: "clamp(18px, 2.5vw, 30px)", lineHeight: 1 }}
+                    aria-hidden="true"
                   >
-                    {link.name}
+                    ↘
                   </span>
-
-                  <div className="mt-2 overflow-hidden">
-                    <span className="font-zalando block text-[9px] uppercase tracking-[0.2em] text-[#333] transition-all duration-500 group-hover:text-black/50 group-hover:translate-x-1">
-                      {link.sub}
-                    </span>
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+                )} */}
+              </button>
+            </li>
+          ))}
+        </ul>
 
         {/* Footer */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 items-end pt-10 border-t border-[#1c1c1a] mt-auto">
-          <div className="flex flex-col gap-1">
-            <p className="font-zalando text-[10px] uppercase tracking-[0.2em] text-[#3a3a38]">Inquiries</p>
-            <a href="mailto:hello@klyro.in" className="font-zalando text-[14px] text-[#f0ede8] tracking-[-0.01em] hover:text-[#666] transition-colors">
+        <div
+          ref={footerRef}
+          className="mt-10 pt-5 flex items-end justify-between"
+          style={{ borderTop: "1px solid rgba(26,26,24,0.18)" }}
+        >
+          <div className="flex flex-col gap-0.5">
+            <p className="text-[9px] uppercase tracking-[0.22em] text-[#f5ede0] opacity-40 font-zalando">
+              Inquiries
+            </p>
+            <a
+              href="mailto:hello@klyro.in"
+              className="text-[13px] text-[#f5ede0] tracking-[-0.01em] font-zalando transition-opacity duration-200 hover:opacity-50"
+            >
               hello@klyro.in
             </a>
           </div>
 
-          <div className="hidden lg:block text-center text-[11px] text-[#3a3a38] tracking-[0.06em]">
-            <strong className="font-zalando block text-[14px] text-[#f0ede8] font-normal mb-0.5">
+          <div className="hidden lg:flex flex-col items-center gap-0.5">
+            <span className="text-[13px] text-[#f5ede0] font-zalando font-normal opacity-65 tabular-nums">
               {time} IST
-            </strong>
-            Tamil Nadu, IN
+            </span>
+            <span className="text-[9px] uppercase tracking-[0.18em] text-[#f5ede0] opacity-32 font-zalando">
+              Tamil Nadu, IN
+            </span>
           </div>
 
-          <div className="text-right">
-            <p className="font-zalando text-[10px] text-[#3a3a38] tracking-[0.16em]">© 2026 KLYRO STUDIO</p>
-          </div>
+          <p className="text-[9px] uppercase tracking-[0.18em] text-[#f5ede0] opacity-32 font-zalando">
+            © 2026 Klyro Studio
+          </p>
         </div>
 
       </div>
