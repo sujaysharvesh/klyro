@@ -87,21 +87,58 @@ const CASES = [
 
 const DEFAULT_COLOR = "#000000";
 
-// ─── Chart ────────────────────────────────────────────────────────────────────
+// ─── Chart with Animation ────────────────────────────────────────────────────
 
 const LineChart = React.memo(function LineChart({
   c,
   theme,
+  isActive,
 }: {
   c: (typeof CASES)[0];
   theme: { lineColor: string; gridColor: string; textColor: string };
+  isActive: boolean;
 }) {
+  const [animationProgress, setAnimationProgress] = useState(0);
+  const chartRef = useRef<any>(null);
+
+  // Animate chart data when it becomes active
+  useEffect(() => {
+    if (isActive) {
+      setAnimationProgress(0);
+      const startTime = performance.now();
+      const duration = 1000; // 1 second animation
+
+      const animate = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease out cubic
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        setAnimationProgress(easeProgress);
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+
+      requestAnimationFrame(animate);
+    }
+  }, [isActive, c.brand]);
+
+  // Animated data
+  const animatedAfter = React.useMemo(() => {
+    return c.after.map(value => value * animationProgress);
+  }, [c.after, animationProgress]);
+
+  const animatedBefore = React.useMemo(() => {
+    return c.before.map(value => value * animationProgress);
+  }, [c.before, animationProgress]);
+
   const data = React.useMemo(() => ({
     labels: c.months,
     datasets: [
       {
         label: "After",
-        data: c.after,
+        data: animatedAfter,
         borderColor: theme.lineColor,
         backgroundColor: (context: any) => {
           const { ctx, chartArea } = context.chart;
@@ -109,12 +146,12 @@ const LineChart = React.memo(function LineChart({
           const g = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
           g.addColorStop(0, `${theme.lineColor}00`);
           g.addColorStop(0.4, `${theme.lineColor}08`);
-          g.addColorStop(1, `${theme.lineColor}18`);
+          g.addColorStop(1, `${theme.lineColor}25`);
           return g;
         },
         borderWidth: 2.5,
         pointRadius: 0,
-        pointHoverRadius: 5,
+        pointHoverRadius: 6,
         pointHoverBackgroundColor: theme.lineColor,
         pointHoverBorderColor: theme.lineColor,
         pointHoverBorderWidth: 2,
@@ -124,13 +161,13 @@ const LineChart = React.memo(function LineChart({
       },
       {
         label: "Before",
-        data: c.before,
+        data: animatedBefore,
         borderColor: `${theme.lineColor}40`,
         backgroundColor: "transparent",
         borderWidth: 1.8,
         borderDash: [5, 5],
         pointRadius: 0,
-        pointHoverRadius: 4,
+        pointHoverRadius: 5,
         pointHoverBackgroundColor: `${theme.lineColor}80`,
         pointHoverBorderColor: theme.lineColor,
         pointHoverBorderWidth: 1.5,
@@ -139,12 +176,12 @@ const LineChart = React.memo(function LineChart({
         order: 2,
       },
     ],
-  }), [c, theme.lineColor]);
+  }), [c, theme.lineColor, animatedAfter, animatedBefore]);
 
   const options = React.useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 0 },
+    animation: { duration: 0 }, // Disable default animation
     interaction: { mode: "index" as const, intersect: false },
     plugins: {
       legend: { display: false },
@@ -156,12 +193,12 @@ const LineChart = React.memo(function LineChart({
           : "rgba(0,0,0,0.7)",
         borderColor: theme.lineColor,
         borderWidth: 1,
-        padding: 8,
+        padding: 10,
         cornerRadius: 8,
-        titleFont: { size: 10, weight: "bold" as const },
-        bodyFont: { size: 9 },
+        titleFont: { size: 11, weight: "bold" as const },
+        bodyFont: { size: 10 },
         callbacks: {
-          label: (ctx: any) => `${ctx.dataset.label}: ${ctx.raw}`,
+          label: (ctx: any) => `${ctx.dataset.label}: ${Math.round(ctx.raw)}`,
         },
       },
     },
@@ -169,12 +206,12 @@ const LineChart = React.memo(function LineChart({
       x: {
         grid: { display: false },
         ticks: {
-          font: { size: 8, weight: "400" as const },
+          font: { size: 9, weight: "400" as const },
           color: theme.gridColor,
           maxRotation: 0,
           autoSkip: true,
           maxTicksLimit: 6,
-          padding: 6,
+          padding: 8,
         },
       },
       y: {
@@ -183,11 +220,17 @@ const LineChart = React.memo(function LineChart({
         beginAtZero: true,
       },
     },
+    elements: {
+      line: {
+        borderJoin: 'round' as const,
+        borderCap: 'round' as const,
+      },
+    },
   }), [theme]);
 
   return (
-    <div className="h-[180px] sm:h-[220px] lg:h-[260px] w-full">
-      <Line data={data}/>
+    <div className="w-full h-full min-h-[220px] sm:min-h-[260px] md:min-h-[280px] lg:min-h-[320px]">
+      <Line ref={chartRef} data={data} options={options} />
     </div>
   );
 });
@@ -200,6 +243,14 @@ export default function ResultsPage() {
   const activeRef = useRef(0);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | undefined>(undefined);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     activeRef.current = active;
@@ -221,6 +272,8 @@ export default function ResultsPage() {
   }, [setLogoColor]);
 
   useLayoutEffect(() => {
+    if (isMobile) return;
+
     const ctx = gsap.context(() => {
       CASES.forEach((_, i) => {
         if (i === 0) return;
@@ -263,7 +316,7 @@ export default function ResultsPage() {
       ctx.revert();
       if (rafRef.current !== undefined) cancelAnimationFrame(rafRef.current);
     };
-  }, [goTo, setLogoColor]);
+  }, [goTo, setLogoColor, isMobile]);
 
   const c = CASES[active];
   const theme = {
@@ -273,6 +326,121 @@ export default function ResultsPage() {
   };
   const isDark = c.textColor === "#f5ede0";
 
+  // Mobile simple scroll view
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-black">
+        <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-lg border-b border-white/10">
+          <div className="flex justify-between items-center px-4 py-4">
+            <p className="text-[10px] uppercase tracking-[0.22em] font-medium text-white/45">
+              Capabilities
+            </p>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-white/30">
+              Since 2019
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-8 px-4 py-6 pb-24">
+          {CASES.map((item, idx) => (
+            <motion.div
+              key={item.brand}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="rounded-2xl overflow-hidden"
+              style={{ backgroundColor: item.bgColor }}
+            >
+              <div className="p-5">
+                <div className="flex items-baseline justify-between mb-4">
+                  <span className="text-[10px] font-mono tracking-widest opacity-40" style={{ color: item.textColor }}>
+                    0{idx + 1}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-[0.22em] opacity-40" style={{ color: item.textColor }}>
+                    {item.service}
+                  </span>
+                </div>
+
+                <h2 className="text-[28px] font-black uppercase tracking-[-0.04em] leading-none mb-3" style={{ color: item.textColor }}>
+                  {item.brand}
+                </h2>
+
+                <p className="text-[12px] opacity-55 leading-relaxed mb-4" style={{ color: item.textColor }}>
+                  {item.desc}
+                </p>
+
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-[10px] opacity-40" style={{ color: item.textColor }}>{item.industry}</span>
+                  <span className="w-1 h-1 rounded-full opacity-30" style={{ backgroundColor: item.textColor }} />
+                  <span className="text-[10px] opacity-40" style={{ color: item.textColor }}>{item.year}</span>
+                </div>
+
+                <div className="rounded-xl p-4 mb-4" style={{ backgroundColor: `${item.accentColor}20` }}>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] uppercase tracking-widest opacity-55" style={{ color: item.textColor }}>
+                      {item.label}
+                    </span>
+                    <span className="text-2xl font-black tracking-tight" style={{ color: item.accentColor }}>
+                      {item.stat}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="h-[200px] mb-4">
+                  <LineChart c={item} theme={{
+                    lineColor: item.chartLineColor,
+                    gridColor: item.chartGridColor,
+                    textColor: item.textColor,
+                  }} isActive={true} />
+                </div>
+
+                <div className="grid grid-cols-4 gap-2 pt-3">
+                  {item.growth.map((g, i) => (
+                    <div key={i} className="space-y-1">
+                      <p className="text-[7px] uppercase tracking-tight opacity-35" style={{ color: item.textColor }}>Q{i + 1}</p>
+                      <p className="text-[11px] font-bold" style={{ color: item.textColor }}>+{g}%</p>
+                      <div className="h-[1.5px] w-full rounded-full overflow-hidden" style={{ backgroundColor: `${item.textColor}10` }}>
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${g}%` }}
+                          transition={{ delay: i * 0.1, duration: 0.8 }}
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: item.accentColor }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-white/10 py-3 px-4">
+          <div className="flex justify-between items-center">
+            <p className="text-[9px] text-white/40">{active + 1} / {CASES.length}</p>
+            <div className="flex gap-2">
+              {CASES.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setActive(idx);
+                    setLogoColor(CASES[idx].logoColor);
+                  }}
+                  className={`transition-all duration-300 ${
+                    active === idx ? "w-8 h-1 bg-white" : "w-1.5 h-1 bg-white/30"
+                  } rounded-full`}
+                />
+              ))}
+            </div>
+            <p className="text-[9px] text-white/40">Swipe ↑</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop: Original layout with full graph
   return (
     <div
       ref={wrapperRef}
@@ -285,9 +453,8 @@ export default function ResultsPage() {
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
           className="h-full flex flex-col"
         >
-
           {/* ── TOP BAR ── */}
-          <div className="flex justify-between items-center px-5 sm:px-8 lg:px-12 pt-5 sm:pt-6 lg:pt-10 pb-0 mt-16 sm:mt-18 lg:mt-20 lg:-translate-x-2">
+          <div className="flex justify-between items-center px-5 sm:px-8 lg:px-12 pt-5 sm:pt-6 lg:pt-10 pb-0 mt-16 sm:mt-18 lg:mt-20">
             <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.22em] font-medium opacity-45">
               Capabilities
             </p>
@@ -297,12 +464,10 @@ export default function ResultsPage() {
           </div>
 
           {/* ── BODY ── */}
-          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-16 flex-1 min-h-0 px-5 sm:px-8 lg:px-12 pt-4 sm:pt-6 lg:pt-8 pb-4 sm:pb-6 lg:pb-10 overflow-y-auto lg:overflow-visible">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-16 flex-1 min-h-0 px-5 sm:px-8 lg:px-12 pt-4 sm:pt-6 lg:pt-8 pb-4 sm:pb-6 lg:pb-10">
 
             {/* LEFT: brand list */}
             <div className="w-full lg:w-[420px] flex flex-col justify-center shrink-0">
-
-              {/* Scroll hint */}
               <AnimatePresence>
                 {active === 0 && (
                   <motion.div
@@ -326,13 +491,13 @@ export default function ResultsPage() {
                 )}
               </AnimatePresence>
 
-              {/* Brand rows */}
               <div className="flex flex-col">
                 {CASES.map((item, i) => (
                   <div
                     key={item.brand}
-                    className="relative py-3 sm:py-4 lg:py-6"
+                    className="relative py-3 sm:py-4 lg:py-6 cursor-pointer"
                     style={{ borderBottom: `1px solid ${c.textColor}10` }}
+                    onClick={() => goTo(i)}
                   >
                     {active === i && (
                       <motion.div
@@ -382,7 +547,6 @@ export default function ResultsPage() {
                                 <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.22em] opacity-40">
                                   {item.service}
                                 </p>
-                                {/* Hide long desc on mobile to save space */}
                                 <p className="hidden sm:block text-[12px] sm:text-[13px] opacity-55 leading-relaxed font-light max-w-[280px]">
                                   {item.desc}
                                 </p>
@@ -396,15 +560,13 @@ export default function ResultsPage() {
                 ))}
               </div>
 
-              {/* Pagination dots */}
               <div className="flex gap-2 pt-3 sm:pt-5 pl-4 sm:pl-5">
                 {CASES.map((_, i) => (
                   <motion.div
                     key={i}
                     animate={{
                       width: active === i ? 20 : 6,
-                      backgroundColor:
-                        active === i ? c.accentColor : `${c.textColor}20`,
+                      backgroundColor: active === i ? c.accentColor : `${c.textColor}20`,
                     }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
                     className="h-[1.5px] rounded-full"
@@ -413,7 +575,7 @@ export default function ResultsPage() {
               </div>
             </div>
 
-            {/* RIGHT: chart card */}
+            {/* RIGHT: Full graph card */}
             <div className="flex-1 flex flex-col justify-center min-h-0">
               <motion.div
                 animate={{
@@ -423,7 +585,7 @@ export default function ResultsPage() {
                     : "rgba(255,255,255,0.88)",
                 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                className="rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-9 border relative overflow-hidden"
+                className="rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border relative overflow-hidden w-full"
                 style={{
                   backdropFilter: isDark ? "blur(12px)" : "none",
                   boxShadow: isDark
@@ -432,7 +594,7 @@ export default function ResultsPage() {
                 }}
               >
                 {/* Card header */}
-                <div className="flex justify-between items-start mb-4 sm:mb-6 lg:mb-8 gap-3">
+                <div className="flex justify-between items-start mb-4 sm:mb-6 gap-3 flex-wrap">
                   <div className="space-y-0.5 min-w-0">
                     <motion.p
                       key={`lbl-${active}`}
@@ -489,13 +651,13 @@ export default function ResultsPage() {
                 </div>
 
                 {/* Legend */}
-                <div className="flex justify-end gap-3 sm:gap-5 mb-2 sm:mb-3">
+                <div className="flex justify-end gap-3 sm:gap-5 mb-3 sm:mb-4">
                   {[
                     { label: "After",  dash: false },
                     { label: "Before", dash: true  },
                   ].map(({ label, dash }) => (
                     <div key={label} className="flex items-center gap-1.5">
-                      <svg width="22" height="8">
+                      <svg width="22" height="8" viewBox="0 0 22 8">
                         <line
                           x1="0" y1="4" x2="22" y2="4"
                           stroke={dash ? `${theme.lineColor}35` : theme.lineColor}
@@ -510,26 +672,28 @@ export default function ResultsPage() {
                   ))}
                 </div>
 
-                {/* Chart */}
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`chart-${active}`}
-                    initial={{ opacity: 0, y: 12, scale: 0.985 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -12, scale: 0.985 }}
-                    transition={{
-                      duration: 0.38,
-                      ease: [0.19, 1, 0.22, 1],
-                      delay: 0.08,
-                    }}
-                  >
-                    <LineChart c={c} theme={theme} />
-                  </motion.div>
-                </AnimatePresence>
+                {/* Full Width Chart */}
+                <div className="w-full min-h-[260px] sm:min-h-[280px] md:min-h-[300px] lg:min-h-[340px] -mx-2 sm:mx-0">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={`chart-${active}`}
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{
+                        duration: 0.5,
+                        ease: [0.19, 1, 0.22, 1],
+                      }}
+                      className="w-full h-full"
+                    >
+                      <LineChart c={c} theme={theme} isActive={true} />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
 
                 {/* Quarterly pips */}
                 <div
-                  className="grid grid-cols-4 gap-2 sm:gap-3 mt-4 sm:mt-5 lg:mt-6 pt-3 sm:pt-4 lg:pt-5 border-t"
+                  className="grid grid-cols-4 gap-2 sm:gap-3 mt-5 sm:mt-6 pt-4 sm:pt-5 border-t"
                   style={{ borderTopColor: `${c.textColor}12` }}
                 >
                   {c.growth.map((g, i) => (
@@ -537,13 +701,13 @@ export default function ResultsPage() {
                       key={`${active}-${i}`}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.18 + i * 0.07, duration: 0.28 }}
+                      transition={{ delay: 0.2 + i * 0.08, duration: 0.3 }}
                       className="space-y-1"
                     >
-                      <p className="text-[7px] sm:text-[8px] uppercase tracking-tight opacity-35">
+                      <p className="text-[8px] sm:text-[9px] uppercase tracking-tight opacity-35">
                         Q{i + 1}
                       </p>
-                      <p className="text-[11px] sm:text-[13px] font-bold">+{g}%</p>
+                      <p className="text-[12px] sm:text-[14px] font-bold">+{g}%</p>
                       <div
                         className="h-[2px] w-full rounded-full overflow-hidden"
                         style={{ backgroundColor: `${c.textColor}10` }}
@@ -552,8 +716,8 @@ export default function ResultsPage() {
                           initial={{ width: 0 }}
                           animate={{ width: `${g}%` }}
                           transition={{
-                            delay: 0.3 + i * 0.08,
-                            duration: 0.9,
+                            delay: 0.3 + i * 0.1,
+                            duration: 0.8,
                             ease: "easeOut",
                           }}
                           className="h-full rounded-full"
@@ -565,7 +729,6 @@ export default function ResultsPage() {
                 </div>
               </motion.div>
             </div>
-
           </div>
         </motion.main>
       </div>
