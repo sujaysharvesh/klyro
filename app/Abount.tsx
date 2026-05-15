@@ -7,9 +7,118 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ── Count-up hook (imported from Section 2) ──────────────────────────────────────────────
+function useCountUp(
+  end: number,
+  {
+    from = 0,
+    duration = 2,
+    decimals = 0,
+    step = 1,
+    pre = "",
+    post = "",
+    enabled = false,
+  }: {
+    from?: number;
+    duration?: number;
+    decimals?: number;
+    step?: number;
+    pre?: string;
+    post?: string;
+    enabled?: boolean;
+  }
+) {
+  const [display, setDisplay] = useState(`${pre}${from.toFixed(decimals)}${post}`);
+  const raf = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const startTime = performance.now();
+    const range = end - from;
+
+    const snap = (n: number) => Math.round(n / step) * step;
+    const fmt = (n: number) =>
+      `${pre}${snap(n).toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}${post}`;
+
+    // Sine-in-out easing
+    const ease = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
+
+    const tick = (now: number) => {
+      const elapsed = (now - startTime) / 1000;
+      const t = Math.min(elapsed / duration, 1);
+      const current = from + range * ease(t);
+      setDisplay(fmt(current));
+      if (t < 1) raf.current = requestAnimationFrame(tick);
+      else setDisplay(fmt(end));
+    };
+
+    raf.current = requestAnimationFrame(tick);
+    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+  }, [enabled, end, from, duration, decimals, step, pre, post]);
+
+  return display;
+}
+
+// ── Animated Stat Item (matching Section 2) ─────────────────────────────────────────
+function StatItem({
+  value,
+  label,
+  growth,
+  visible,
+}: {
+  value: string;
+  label: string;
+  growth: string;
+  visible: boolean;
+}) {
+  // Parse the numeric value and any pre/post decorators
+  const match = value.match(/^([^0-9]*)([0-9.]+)([^0-9]*)$/);
+  const pre = match?.[1] ?? "";
+  const numStr = match?.[2] ?? "0";
+  const post = match?.[3] ?? "";
+  const end = parseFloat(numStr);
+  const decimals = numStr.includes(".") ? numStr.split(".")[1].length : 0;
+  const step = decimals > 0 ? 0.5 : 1;
+
+  const display = useCountUp(end, { from: 0, duration: 2, decimals, step, pre, post, enabled: visible });
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6 }}
+      className="text-center group cursor-pointer"
+    >
+      <div className="h-16 sm:h-24 flex items-center justify-center overflow-hidden mb-2 sm:mb-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 10 }}
+          animate={visible ? { opacity: 1, scale: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-4xl sm:text-5xl lg:text-7xl font-black tabular-nums"
+        >
+          {display}
+        </motion.div>
+      </div>
+      <p className="text-black/60 text-[11px] sm:text-sm uppercase tracking-wider font-mono mb-2 min-h-[2.5rem] sm:min-h-0 flex items-center justify-center">
+        {label}
+      </p>
+      <div className="flex items-center justify-center gap-2">
+        <div className="w-6 sm:w-8 h-[2px] bg-black/20 group-hover:w-12 transition-all duration-300" />
+        <span className="text-[9px] tracking-wider uppercase text-black/30">
+          {growth}
+        </span>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function AgencyAboutPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const spanRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const [statsVisible, setStatsVisible] = useState(false);
   const [activeStat, setActiveStat] = useState(0);
 
   // Parallax scroll effects
@@ -22,13 +131,25 @@ export default function AgencyAboutPage() {
   const y2 = useTransform(scrollYProgress, [0, 1], [0, -100]);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
-  // Stats data for cinematic scrolling
+  // Stats data for cinematic scrolling with counter animation
   const stats = [
     { value: "150+", label: "Projects Delivered", growth: "+240%" },
     { value: "98%", label: "Client Retention", growth: "+45%" },
     { value: "24", label: "Global Awards", growth: "×3" },
     { value: "12M", label: "Combined Reach", growth: "+187%" }
   ];
+
+  // IntersectionObserver fires count-up when stats scroll into view
+  useEffect(() => {
+    const el = statsRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setStatsVisible(true); obs.disconnect(); } },
+      { threshold: 0.3 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     const target = spanRef.current;
@@ -264,7 +385,7 @@ export default function AgencyAboutPage() {
         </div>
       </section>
 
-      {/* ── STATISTICS GRID ── */}
+      {/* ── STATISTICS GRID WITH COUNTER ANIMATION ── */}
       <section className="py-20 md:py-40 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
         <div className="text-center mb-16 md:mb-24">
           <motion.div
@@ -280,40 +401,18 @@ export default function AgencyAboutPage() {
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12 sm:gap-12 lg:gap-16">
+        <div 
+          ref={statsRef}
+          className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12 sm:gap-12 lg:gap-16"
+        >
           {stats.map((stat, i) => (
-            <motion.div
+            <StatItem
               key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05, duration: 0.6 }}
-              className="text-center group cursor-pointer"
-              onMouseEnter={() => setActiveStat(i)}
-            >
-              <div className="h-16 sm:h-24 flex items-center justify-center overflow-hidden mb-2 sm:mb-4">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeStat === i ? "active" : "inactive"}
-                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                    className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tighter"
-                  >
-                    {stat.value}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-              <p className="text-black/60 text-[11px] sm:text-sm uppercase tracking-wider font-mono mb-2 min-h-[2.5rem] sm:min-h-0 flex items-center justify-center">
-                {stat.label}
-              </p>
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-6 sm:w-8 h-[2px] bg-black/20 group-hover:w-12 transition-all duration-300" />
-                <span className="text-[9px] tracking-wider uppercase text-black/30">
-                  {stat.growth}
-                </span>
-              </div>
-            </motion.div>
+              value={stat.value}
+              label={stat.label}
+              growth={stat.growth}
+              visible={statsVisible}
+            />
           ))}
         </div>
       </section>

@@ -359,7 +359,7 @@ export function ServicesSection({ animationStyle = "blur" }: ServicesSectionProp
     <section className="relative min-h-screen w-full flex flex-col lg:flex-row items-center px-4 sm:px-6 md:px-8 lg:px-12 py-12 lg:py-0 overflow-hidden">
 
       {/* Header - Responsive */}
-      <div className="absolute top-6 sm:top-8 md:top-10 lg:top-30 left-4 sm:left-6 md:left-8 lg:left-12 right-4 sm:right-6 md:right-8 lg:right-10 flex justify-between items-center z-20">
+      <div className="absolute top-6 sm:top-8 md:top-10 lg:top-30 left-4 sm:left-6 md:left-8 lg:left-10 right-4 sm:right-6 md:right-8 lg:right-10 flex justify-between items-center z-20">
         <h1 className="text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] font-zalando text-black/70 leading-tight">
           Our Services
         </h1>

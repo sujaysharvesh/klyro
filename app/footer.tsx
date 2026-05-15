@@ -42,7 +42,7 @@ export default function Footer() {
     { name: "AWWWARDS", year: "2024" },
     { name: "CSS DA", year: "2023" },
     { name: "FWA", year: "2024" },
-  ];
+  ];  
 
   return (
     <footer className="w-full bg-[#0a0a0a] text-white font-zalando px-5 sm:px-8 lg:px-12 flex flex-col justify-end overflow-hidden relative select-none">

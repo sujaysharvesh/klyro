@@ -287,7 +287,7 @@ export default function ResultsPage() {
         >
 
           {/* ── TOP BAR ── */}
-          <div className="flex justify-between items-center px-5 sm:px-8 lg:px-12 pt-5 sm:pt-6 lg:pt-8 pb-0 mt-16 sm:mt-18 lg:mt-20">
+          <div className="flex justify-between items-center px-5 sm:px-8 lg:px-12 pt-5 sm:pt-6 lg:pt-10 pb-0 mt-16 sm:mt-18 lg:mt-20 lg:-translate-x-2">
             <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.22em] font-medium opacity-45">
               Capabilities
             </p>
