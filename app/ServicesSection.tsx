@@ -105,6 +105,7 @@ interface ServicesSectionProps {
 export function ServicesSection({ animationStyle = "blur" }: ServicesSectionProps) {
   const [active, setActive] = useState<number | null>(0);
   const [currentStyle] = useState<AnimationType>(animationStyle);
+  const [isMobile, setIsMobile] = useState(false);
 
   const activeRef = useRef<number | null>(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -116,6 +117,16 @@ export function ServicesSection({ animationStyle = "blur" }: ServicesSectionProp
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const style = ANIMATION_STYLES[currentStyle];
+
+  // Check for mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     gsap.set(boxRef.current, { opacity: 1, x: 0 });
@@ -308,6 +319,8 @@ export function ServicesSection({ animationStyle = "blur" }: ServicesSectionProp
   };
 
   const handleLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile) return; // Disable on mobile
+    
     const related = e.relatedTarget as Node | null;
     if (listRef.current?.contains(related)) return;
 
@@ -324,6 +337,8 @@ export function ServicesSection({ animationStyle = "blur" }: ServicesSectionProp
   };
 
   const handleListLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile) return;
+    
     const related = e.relatedTarget as Node | null;
     const box = boxRef.current;
     
@@ -331,21 +346,35 @@ export function ServicesSection({ animationStyle = "blur" }: ServicesSectionProp
     handleLeave(e);
   };
 
-  return (
-    <section className="relative min-h-screen w-full flex items-center px-12 overflow-hidden">
+  // Mobile click handler
+  const handleMobileClick = (i: number) => {
+    if (active === i) {
+      // If same item, maybe close? Or keep open
+      return;
+    }
+    handleEnter(i);
+  };
 
-      <div className="absolute top-30 left-12 right-10 flex justify-between items-center z-20 ">
-        <h1 className="text-[15px] font-zalando text-black/70 leading-tight">Our Services</h1>
-        <p className="text-[15px] font-zalando text-black/70 leading-tight hidden lg:block">
+  return (
+    <section className="relative min-h-screen w-full flex flex-col lg:flex-row items-center px-4 sm:px-6 md:px-8 lg:px-12 py-12 lg:py-0 overflow-hidden">
+
+      {/* Header - Responsive */}
+      <div className="absolute top-6 sm:top-8 md:top-10 lg:top-30 left-4 sm:left-6 md:left-8 lg:left-12 right-4 sm:right-6 md:right-8 lg:right-10 flex justify-between items-center z-20">
+        <h1 className="text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] font-zalando text-black/70 leading-tight">
+          Our Services
+        </h1>
+        <p className="text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] font-zalando text-black/70 leading-tight hidden md:block">
           Built for modern brands
         </p>
+        {/* Mobile indicator */}
+        <span className="block md:hidden text-[10px] text-black/40">Tap to explore</span>
       </div>
 
-      {/* ── VIDEO PANEL ── */}
-      <div className="relative w-1/2 h-[500px] flex items-center justify-center z-10">
+      {/* ── VIDEO PANEL - Responsive sizing ── */}
+      <div className="relative w-full lg:w-1/2 h-[300px] sm:h-[350px] md:h-[400px] lg:h-[500px] flex items-center justify-center z-10 mt-16 lg:mt-0">
         <div
           ref={boxRef}
-          className="w-full max-w-[90%] h-full rounded-2xl overflow-hidden bg-[#111] relative shadow-2xl"
+          className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-full max-w-[90%] lg:max-w-[90%] h-full rounded-xl sm:rounded-2xl overflow-hidden bg-[#111] relative shadow-2xl"
         >
           {SERVICES.map((s, i) => (
             <div
@@ -369,30 +398,33 @@ export function ServicesSection({ animationStyle = "blur" }: ServicesSectionProp
         </div>
       </div>
 
-      {/* ── SERVICES LIST ── */}
+      {/* ── SERVICES LIST - Responsive spacing ── */}
       <div
         ref={listRef}
-        className="w-1/2 flex flex-col justify-center items-start pl-12"
+        className="w-full lg:w-1/2 flex flex-col justify-center items-start pl-0 lg:pl-8 xl:pl-12 mt-8 lg:mt-0"
         onMouseLeave={handleListLeave}
       >
         {SERVICES.map((s, i) => (
           <div
             key={s.name}
-            onMouseEnter={() => handleEnter(i)}
-            className="group w-full cursor-pointer py-4 border-b border-black/5 last:border-none transition-all duration-300"
+            onMouseEnter={() => !isMobile && handleEnter(i)}
+            onClick={() => isMobile && handleMobileClick(i)}
+            className={`group w-full cursor-pointer py-3 sm:py-4 border-b border-black/5 last:border-none transition-all duration-300 ${
+              isMobile && active === i ? 'bg-black/5' : ''
+            }`}
           >
-            <div className="flex items-baseline gap-6">
+            <div className="flex items-baseline gap-3 sm:gap-4 md:gap-6 flex-wrap">
               <h2
                 className={`font-black uppercase tracking-tighter transition-colors duration-300 ${
                   active === i ? "text-black" : "text-black/20 group-hover:text-black/40"
                 }`}
-                style={{ fontSize: "clamp(32px, 5vw, 64px)", lineHeight: "0.9" }}
+                style={{ fontSize: "clamp(24px, 6vw, 64px)", lineHeight: "1" }}
               >
                 {s.name}
               </h2>
               <span
-                className={`text-[10px] uppercase tracking-widest transition-all duration-300 ${
-                  active === i ? "opacity-100 text-black/60" : "opacity-0"
+                className={`text-[8px] sm:text-[9px] md:text-[10px] uppercase tracking-widest transition-all duration-300 ${
+                  active === i ? "opacity-100 text-black/60" : "opacity-0 lg:opacity-0"
                 }`}
               >
                 {s.tag}
@@ -407,13 +439,30 @@ export function ServicesSection({ animationStyle = "blur" }: ServicesSectionProp
                 opacity: i === 0 ? 1 : 0 
               }}
             >
-              <p className="text-black/60 text-base max-w-md pt-4 font-light leading-relaxed">
+              <p className="text-black/60 text-sm sm:text-base max-w-md pt-2 sm:pt-3 md:pt-4 font-light leading-relaxed pr-4">
                 {s.description}
               </p>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Mobile instruction overlay */}
+      {isMobile && (
+        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full text-[10px] tracking-wider z-30 animate-pulse">
+          Tap any service to view
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+        .animate-pulse {
+          animation: pulse 2s ease-in-out infinite;
+        }
+      `}</style>
     </section>
   );
 }

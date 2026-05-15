@@ -1,13 +1,23 @@
 "use client";
 
 import { motion, useTransform, AnimatePresence } from "framer-motion";
-import { useRef, useState } from "react";
-
+import { useRef, useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function BrandsPage() {
 
   const marqueeRef = useRef<HTMLDivElement>(null);
   const [hoveredBrand, setHoveredBrand] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const brands = [
     { name: "Nike", logo: "/logos/nike.svg", color: "#E7682D", description: "Global sportswear leader" },
@@ -27,49 +37,54 @@ export default function BrandsPage() {
   ];
 
   return (
-    <div className="min-h-screen text-[#111] overflow-hidden font-zalando">
+    <div className="min-h-screen text-[#111] overflow-hidden font-zalando bg-[#f5f3ef]">
 
       {/* ── HERO ── */}
-      <section className="flex flex-col gap-1 px-10 pt-10 pb-8 md:px-7 md:pt-7 md:pb-7">
+      <section className="flex flex-col gap-1 px-4 sm:px-6 md:px-7 lg:px-10 pt-6 sm:pt-8 md:pt-7 lg:pt-10 pb-6 sm:pb-7 md:pb-7 lg:pb-8">
 
         {/* eyebrow row */}
-        <div className="flex items-center justify-between pl-5">
-          <span className="text-[14px] font-zalando text-black/70">
+        <div className="flex items-center justify-between pl-2 sm:pl-3 md:pl-4 lg:pl-5">
+          <span className="text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] font-zalando text-black/70">
             Trusted by modern brands
           </span>
-          <span className="text-[12px] font-zalando tracking-[0.1em] text-black/70">
+          <span className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[12px] font-zalando tracking-[0.08em] sm:tracking-[0.1em] text-black/70">
             Global Partners
           </span>
         </div>
 
         {/* headline */}
         <h1
-          className="font-zalando"
-          style={{
-            position: "relative",
-            fontSize: "clamp(38px, 6vw, 86px)",
-            fontWeight: 400,
-            lineHeight: 0.95,
-            letterSpacing: "-0.09em",
-            color: "#111",
-            left: 19,
-            top: 19,
-          }}
-        >
-          We create digital<br />
-          experiences that<br />
-      
-            move brands forward.
+  className="
+    font-zalando
+    relative
+    sm:left-[5px]
+    md:left-[10px]
+    lg:left-[19px]
+    sm:top-[5px]
+    md:top-[10px]
+    lg:top-[19px]
+  "
+  style={{
+    fontSize: "clamp(32px, 8vw, 86px)",
+    fontWeight: 400,
+    lineHeight: 1.05,
+    letterSpacing: "-0.05em",
+    color: "#111",
+  }}
+>
+          We create digital<br className="hidden sm:block" />
+          experiences that<br className="hidden sm:block" />
+          move brands forward.
         </h1>
 
-        {/* stats */}
-        <div className="flex flex-wrap gap-7 pt-4 md:gap-7 lg:translate-x-5">
+        {/* stats - responsive grid */}
+        <div className="flex flex-wrap gap-4 sm:gap-5 md:gap-6 lg:gap-7 pt-4 sm:pt-5 md:pt-6 lg:pt-8 lg:translate-x-5">
           {stats.map((s) => (
             <div key={s.label} className="flex flex-col gap-0">
-              <span className="font-zalando text-[26px] font-normal text-[#111] tracking-[-0.02em]">
+              <span className="font-zalando text-[20px] sm:text-[22px] md:text-[24px] lg:text-[26px] font-normal text-[#111] tracking-[-0.02em]">
                 {s.value}
               </span>
-              <span className="font-zalando text-[11px] font-normal tracking-[0.12em] uppercase text-black/40">
+              <span className="font-zalando text-[9px] sm:text-[10px] md:text-[11px] lg:text-[11px] font-normal tracking-[0.1em] uppercase text-black/40">
                 {s.label}
               </span>
             </div>
@@ -78,106 +93,125 @@ export default function BrandsPage() {
       </section>
 
       {/* ── MARQUEE ── */}
-<section className="relative py-10 overflow-hidden">
-  <div className="absolute inset-0 bg-gradient-to-r from-[#f5f3ef] via-transparent to-[#f5f3ef] z-10 pointer-events-none" />
+      <section className="relative py-6 sm:py-8 md:py-10 overflow-hidden">
+        {/* Gradient fades - responsive */}
+        <div className="absolute inset-y-0 left-0 w-12 sm:w-16 md:w-20 bg-gradient-to-r from-[#f5f3ef] to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-12 sm:w-16 md:w-20 bg-gradient-to-l from-[#f5f3ef] to-transparent z-10 pointer-events-none" />
 
-  {/* Left label */}
-  <div className="absolute left-0 top-1/2 -translate-y-1/2 z-20 pr-7 pl-5 py-3">
-    <span className="text-[10px] tracking-[0.3em] uppercase text-black/30">
-      Partners
-    </span>
-  </div>
+        {/* Left label - hidden on mobile */}
+        <div className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-20 pr-7 pl-5 py-3">
+          <span className="text-[10px] tracking-[0.3em] uppercase text-black/30 whitespace-nowrap">
+            Partners
+          </span>
+        </div>
 
-  {/* Marquee Track */}
-  <div ref={marqueeRef} className="overflow-hidden">
-    <motion.div
-      className="flex w-max"
-      animate={{ x: ["0%", "-50%"] }}
-      transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-    >
-      {[...brands, ...brands].map((brand, i) => (
-        <motion.div
-          key={i}
-          className="
-            w-[180px] h-[100px]
-            flex-shrink-0
-            flex flex-col items-center justify-center
-            relative
-            group
-            cursor-pointer
-          "
-          onMouseEnter={() => setHoveredBrand(i)}
-          onMouseLeave={() => setHoveredBrand(null)}
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.3 }}
-        >
-          {/* Logo */}
-          <img
-            src={brand.logo}
-            alt={brand.name}
-            className="
-              w-[72px] h-[48px]
-              object-contain
-              opacity-40
-              grayscale
-              transition-all duration-500
-              group-hover:opacity-100
-              group-hover:grayscale-0
-              group-hover:scale-110
-            "
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
+        {/* Marquee Track - responsive speeds */}
+        <div ref={marqueeRef} className="overflow-hidden">
+          <motion.div
+            className="flex w-max"
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ 
+              duration: isMobile ? 20 : 30, 
+              repeat: Infinity, 
+              ease: "linear" 
             }}
-          />
-
-          {/* Hover Description */}
-          <AnimatePresence>
-            {hoveredBrand === i && (
+          >
+            {[...brands, ...brands].map((brand, i) => (
               <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                transition={{ duration: 0.25 }}
-                className="absolute bottom-1 text-center"
+                key={i}
+                className="
+                  w-[120px] sm:w-[140px] md:w-[160px] lg:w-[180px]
+                  h-[70px] sm:h-[80px] md:h-[90px] lg:h-[100px]
+                  flex-shrink-0
+                  flex flex-col items-center justify-center
+                  relative
+                  group
+                  cursor-pointer
+                  mx-2 sm:mx-3 md:mx-4
+                "
+                onMouseEnter={() => setHoveredBrand(i)}
+                onMouseLeave={() => setHoveredBrand(null)}
+                whileHover={{ scale: isMobile ? 1.01 : 1.02 }}
+                transition={{ duration: 0.3 }}
               >
-                <p className="text-[8px] tracking-[0.2em] uppercase text-black/40">
-                  {brand.description}
-                </p>
+                {/* Logo */}
+                <div className="relative w-[50px] h-[35px] sm:w-[60px] sm:h-[40px] md:w-[65px] md:h-[44px] lg:w-[72px] lg:h-[48px]">
+                  <img
+                    src={brand.logo}
+                    alt={brand.name}
+                    className="
+                      w-full h-full
+                      object-contain
+                      opacity-40
+                      grayscale
+                      transition-all duration-500
+                      group-hover:opacity-100
+                      group-hover:grayscale-0
+                      group-hover:scale-110
+                    "
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                </div>
+
+                {/* Hover Description - responsive size */}
+                <AnimatePresence>
+                  {hoveredBrand === i && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 5 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute -bottom-4 sm:bottom-0 text-center whitespace-nowrap"
+                    >
+                      <p className="text-[7px] sm:text-[8px] tracking-[0.15em] uppercase text-black/40">
+                        {brand.description}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      ))}
-    </motion.div>
-  </div>
+            ))}
+          </motion.div>
+        </div>
 
-  {/* Right label */}
-  <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20  pl-7 pr-5 py-3">
-    <span className="text-[10px] tracking-[0.3em] uppercase text-black/30">
-      Since 2019
-    </span>
-  </div>
-</section>
-
-      {/* ── CLIENT QUOTE ── */}
-      <section className="text-[#080808] px-10 py-10 border-t border-white/10">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="w-12 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-5" />
-          <p className="text-[12px] tracking-[0.2em] uppercase text-[#fffff] mb-3">
-            What our clients say
-          </p>
-          <p className="text-[17px] md:text-[19px] leading-[1.6] text-black italic max-w-2xl mx-auto">
-            "A partner who truly understands how to blend creativity with strategic thinking."
-          </p>
+        {/* Right label - hidden on mobile */}
+        <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-20 pl-7 pr-5 py-3">
+          <span className="text-[10px] tracking-[0.3em] uppercase text-black/30 whitespace-nowrap">
+            Since 2019
+          </span>
         </div>
       </section>
 
-      <style>{`
-        @keyframes marquee {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-33.333%); }
-        }
-      `}</style>
+      {/* Mobile partner indicators */}
+      <div className="flex md:hidden justify-center gap-1 py-2">
+        {brands.map((_, i) => (
+          <div key={i} className="w-1 h-1 rounded-full bg-black/20" />
+        ))}
+      </div>
+
+      {/* ── CLIENT QUOTE ── */}
+      <section className="text-[#080808] px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-10 md:py-12 border-t border-black/5">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="w-8 sm:w-10 md:w-12 h-px bg-gradient-to-r from-transparent via-black/20 to-transparent mx-auto mb-4 sm:mb-5" />
+          <p className="text-[10px] sm:text-[11px] md:text-[12px] tracking-[0.15em] md:tracking-[0.2em] uppercase text-black/50 mb-2 sm:mb-3">
+            What our clients say
+          </p>
+          <p className="text-[15px] sm:text-[16px] md:text-[17px] lg:text-[19px] leading-[1.5] sm:leading-[1.55] md:leading-[1.6] text-black italic max-w-2xl mx-auto px-2">
+            "A partner who truly understands how to blend creativity with strategic thinking."
+          </p>
+          <div className="mt-4 sm:mt-5 md:mt-6 flex justify-center gap-1">
+            <div className="w-1 h-1 rounded-full bg-black/30" />
+            <div className="w-1 h-1 rounded-full bg-black/30" />
+            <div className="w-1 h-1 rounded-full bg-black/30" />
+          </div>
+        </div>
+      </section>
+
+      {/* Bottom gradient line */}
+      <div className="h-px bg-gradient-to-r from-transparent via-black/10 to-transparent mx-4 sm:mx-6 md:mx-8 lg:mx-10" />
+
 
     </div>
   );
