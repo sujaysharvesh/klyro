@@ -17,6 +17,7 @@ import {
   LineElement,
   Filler,
   Tooltip,
+  type ChartOptions,
 } from "chart.js";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -106,12 +107,11 @@ const LineChart = React.memo(function LineChart({
     if (isActive) {
       setAnimationProgress(0);
       const startTime = performance.now();
-      const duration = 1000; // 1 second animation
+      const duration = 1000;
 
       const animate = (now: number) => {
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        // Ease out cubic
         const easeProgress = 1 - Math.pow(1 - progress, 3);
         setAnimationProgress(easeProgress);
 
@@ -178,10 +178,10 @@ const LineChart = React.memo(function LineChart({
     ],
   }), [c, theme.lineColor, animatedAfter, animatedBefore]);
 
-  const options = React.useMemo(() => ({
+  const options: ChartOptions<"line"> = React.useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 0 }, // Disable default animation
+    animation: { duration: 0 },
     interaction: { mode: "index" as const, intersect: false },
     plugins: {
       legend: { display: false },
@@ -195,7 +195,7 @@ const LineChart = React.memo(function LineChart({
         borderWidth: 1,
         padding: 10,
         cornerRadius: 8,
-        titleFont: { size: 11, weight: "bold" as const },
+        titleFont: { size: 11, weight: "bold" },
         bodyFont: { size: 10 },
         callbacks: {
           label: (ctx: any) => `${ctx.dataset.label}: ${Math.round(ctx.raw)}`,
@@ -206,7 +206,7 @@ const LineChart = React.memo(function LineChart({
       x: {
         grid: { display: false },
         ticks: {
-          font: { size: 9, weight: "400" as const },
+          font: { size: 9 },
           color: theme.gridColor,
           maxRotation: 0,
           autoSkip: true,
@@ -218,12 +218,6 @@ const LineChart = React.memo(function LineChart({
         grid: { color: theme.gridColor, lineWidth: 0.5 },
         ticks: { display: false },
         beginAtZero: true,
-      },
-    },
-    elements: {
-      line: {
-        borderJoin: 'round' as const,
-        borderCap: 'round' as const,
       },
     },
   }), [theme]);
