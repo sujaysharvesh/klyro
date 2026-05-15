@@ -37,13 +37,13 @@ export default function BrandsPage() {
   ];
 
   return (
-    <div className="min-h-screen text-[#111] overflow-hidden font-zalando bg-[#f5f3ef]">
+    <div className="min-h-screen text-[#111] overflow-hidden font-zalando pt-50 md:pt-24 lg:pt-22">
 
       {/* ── HERO ── */}
       <section className="flex flex-col gap-1 px-4 sm:px-6 md:px-7 lg:px-10 pt-6 sm:pt-8 md:pt-7 lg:pt-10 pb-6 sm:pb-7 md:pb-7 lg:pb-8">
 
         {/* eyebrow row */}
-        <div className="flex items-center justify-between pl-2 sm:pl-3 md:pl-4 lg:pl-5">
+        <div className="flex items-center justify-between pl-2 sm:pl-3 md:pl-4 lg:pl-1">
           <span className="text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] font-zalando text-black/70">
             Trusted by modern brands
           </span>
@@ -63,6 +63,7 @@ export default function BrandsPage() {
     sm:top-[5px]
     md:top-[10px]
     lg:top-[19px]
+
   "
   style={{
     fontSize: "clamp(32px, 8vw, 86px)",
@@ -70,6 +71,7 @@ export default function BrandsPage() {
     lineHeight: 1.05,
     letterSpacing: "-0.05em",
     color: "#111",
+    top:10
   }}
 >
           We create digital<br className="hidden sm:block" />

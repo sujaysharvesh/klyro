@@ -374,7 +374,7 @@ export function ServicesSection({ animationStyle = "blur" }: ServicesSectionProp
       <div className="relative w-full lg:w-1/2 h-[300px] sm:h-[350px] md:h-[400px] lg:h-[500px] flex items-center justify-center z-10 mt-16 lg:mt-0">
         <div
           ref={boxRef}
-          className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-full max-w-[90%] lg:max-w-[90%] h-full rounded-xl sm:rounded-2xl overflow-hidden bg-[#111] relative shadow-2xl"
+          className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-full max-w-[90%] lg:max-w-[90%] h-full rounded-xl sm:rounded-2xl overflow-hidden relative shadow-xl"
         >
           {SERVICES.map((s, i) => (
             <div
@@ -448,11 +448,11 @@ export function ServicesSection({ animationStyle = "blur" }: ServicesSectionProp
       </div>
 
       {/* Mobile instruction overlay */}
-      {isMobile && (
+      {/* {isMobile && (
         <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full text-[10px] tracking-wider z-30 animate-pulse">
           Tap any service to view
         </div>
-      )}
+      )} */}
 
       <style jsx>{`
         @keyframes pulse {

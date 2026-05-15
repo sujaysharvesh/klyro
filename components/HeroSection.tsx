@@ -33,7 +33,7 @@ export function HeroSection({ time }: HeroSectionProps) {
   ];
 
   return (
-    <div className="relative z-10 pt-16 sm:pt-20 font-zalando">
+    <div className="relative z-10 pt-2 sm:pt-20 font-zalando">
 
       {/* ── Top meta grid ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 px-5 sm:px-8 md:px-12 py-6 sm:py-8 md:py-10 gap-6 md:gap-1 items-start">
